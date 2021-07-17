@@ -1,0 +1,574 @@
+---
+title: "Projeto Final"
+author: "Thais Fernandes"
+date: "06/06/2021"
+output:
+  html_document:
+    df_print: paged
+    theme: cosmo
+    highlight: kate
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+(knitr::opts_chunk$set(echo=FALSE, error=FALSE, warning=FALSE, message=FALSE)) 
+```
+
+```{r}
+library("tidyverse")
+library("kableExtra")
+library("knitr")
+library("tidylog")
+library("DT")
+library("kableExtra")
+library("knitr")
+library("tidylog")
+library("readxl")
+library("geobr")
+library("sf")
+library("wesanderson")
+library("ggplot2")
+library("stringr")
+
+```
+
+```{r}
+
+# Arquivos 
+
+setwd("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/Análise Mestrado")
+
+munic_pop <- read_excel("Base_MUNIC_2019.xlsx")
+
+munic_rh <- read_excel("Base_MUNIC_2019.xlsx", "Recursos humanos")
+
+munic_idh <- read_excel("idh_muni.xlsx") 
+
+munic_pib <- read_excel("PIB dos Municípios - base de dados 2010-2018.xls") 
+
+plano_mob <- read_excel("PlanosdeMobilidadeUrbana.xlsx") 
+```
+
+```{r}
+# Tabela com a população dos municípios que adotaram a política de tarifa zero no transporte: 
+
+munic_isencao_tarifa <- munic_pop %>% filter(`NOME MUNIC` == "Maricá" | 
+                      `NOME MUNIC` == "Itatiaiuçu" |
+                      `NOME MUNIC` == "Holambra" | 
+                      `NOME MUNIC` == "Eusébio" |
+                      `NOME MUNIC` == "Agudos" | 
+                      `NOME MUNIC` == "Vargem Grande Paulista" | 
+                      `NOME MUNIC` == "Macatuba" |
+                      `NOME MUNIC` == "Potirendaba" | 
+                      `NOME MUNIC` == "Wenceslau Braz"| 
+                      `NOME MUNIC` == "Pitanga"|
+                      `NOME MUNIC` == "Ivaiporã"| 
+                      `NOME MUNIC` == "Monte Carmelo"|
+                      `NOME MUNIC` == "Pirapora do Bom Jesus"| 
+                      `NOME MUNIC` == "Silva Jardim"|
+                      `NOME MUNIC` == "Muzambinho"|
+                      `NOME MUNIC` == "Campo Belo"| 
+                      `NOME MUNIC` == "Anicuns" | 
+                      `NOME MUNIC` == "Faxinal"| 
+                      `NOME MUNIC` == "Arceburgo"| 
+                      `NOME MUNIC` == "Cláudio"| 
+                      `NOME MUNIC` == "Abaeté"| 
+                      `NOME MUNIC` == "Aruanã"|
+                      `NOME MUNIC` == "Dourado"| 
+                      `NOME MUNIC` == "Cerquilho"| 
+                      `NOME MUNIC` == "Pedro Osório"|
+                      `NOME MUNIC` == "Aquiraz"|
+                      `NOME MUNIC` == "Morungaba") 
+  
+  munic_isencao_tarifa <- munic_isencao_tarifa %>% filter(CodMun != 3172202)
+
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("1 - Até 5000","Até 5.000", munic_isencao_tarifa$`CLASSE POP`) 
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("2 - 5001 até 10000","5.000 Até 10.000", munic_isencao_tarifa$`CLASSE POP`) 
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("3 - 10001 até 20000","10.000 Até 20.000", munic_isencao_tarifa$`CLASSE POP`) 
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("4 - 20001 até 50000","20.000 Até 50.000", munic_isencao_tarifa$`CLASSE POP`) 
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("5 - 50001 até 100000","50.000 Até 100.000", munic_isencao_tarifa$`CLASSE POP`) 
+  munic_isencao_tarifa$`CLASSE POP` <-  gsub("6 - 100001 até 500000","100.000 Até 500.000", munic_isencao_tarifa$`CLASSE POP`) 
+  
+  munic_isencao_tarifa$REGIAO <-  gsub("3 - Sudeste","Sudeste", munic_isencao_tarifa$REGIAO) 
+  munic_isencao_tarifa$REGIAO <-  gsub("4 - Sul","Sul", munic_isencao_tarifa$REGIAO) 
+  munic_isencao_tarifa$REGIAO <-  gsub("5 - Centro-Oeste","Centro Oeste", munic_isencao_tarifa$REGIAO) 
+  munic_isencao_tarifa$REGIAO <-  gsub("2 - Nordeste","Nordeste", munic_isencao_tarifa$REGIAO) 
+  
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  mutate(`CLASSE POP` = factor(`CLASSE POP`, levels = c("Até 5.000", 
+    "5.000 Até 10.000", "10.000 Até 20.000", "20.000 Até 50.000", "50.000 Até 100.000", "100.000 Até 500.000", ordered = T)))
+
+# Ano de implatanção da Política
+
+# Essa informação foi coletada da dissertação de Mestrado de MArijke Vermander, "EXPLORING FARE-FREE PUBLIC
+# TRANSPORT IN BRAZIL Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities"
+
+ano_implementacao <- tibble(Munic=c("Abaeté", "Agudos", "Anicuns", "Aquiraz",
+                      "Arceburgo", "Aruanã", "Campo Belo", "Cerquilho", 
+                      "Cláudio", "Dourado", "Eusébio", "Faxinal", "Holambra",  "Itatiaiuçu", 
+                      "Ivaiporã", "Macatuba", "Maricá", "Monte Carmelo", "Morungaba","Muzambinho","Pedro Osório", 
+                      "Pirapora do Bom Jesus", "Pitanga", "Potirendaba","Silva Jardim", "Vargem Grande Paulista","Wenceslau Braz"),
+       ano_implementacao=c(1997, 2003, 2014, 2018, 2019, 2008, 2019, 2020, 2021, 
+             2014, 2010, 2001, 2010, 2015, 2001, 2004, 2013, 1994,2019,2011,2018,2020, 2012, 1998, 2014,2019, 2008), 
+       ano_implemen_resumido=c("Até anos 2000", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2001 e 2009", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2001 e 2009", "Entre 2010 e 2015", "Até anos 2000", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Até anos 2000", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2001 e 2009"))
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  rename(Munic = `NOME MUNIC`)
+
+munic_isencao_tarifa <- ano_implementacao %>% 
+  left_join(munic_isencao_tarifa, by = "Munic")
+
+# ìndice de Desenvolvimento Humano Municipal (IDHM):
+
+# dados de 2010 coletado do site oficial da PNUD Brasil: https://www.br.undp.org/content/brazil/pt/home/idh0/rankings/idhm-municipios-2010.html
+
+munic_idh <- munic_idh %>% 
+  separate(Territorialidade, c("Munic","UF"), "\\(") %>% 
+  separate(UF, c("UF","Parentesis"), "\\)") %>% 
+  select(-3)
+
+munic_idh$Munic <- trimws(munic_idh$Munic)
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+inner_join(munic_idh, by = "Munic") %>% 
+  select(-UF.y) %>% filter(CodMun != 3172202) %>% 
+  distinct(Munic, .keep_all = TRUE) %>% 
+  rename(UF = UF.x) 
+
+# PIB dos municípios, IBGE 2018: 
+
+munic_pib_filtrado <- munic_pib %>% 
+  filter(Ano == 2018) %>% 
+  select(Ano, `Código do Município`,`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, `Nome da Grande Região`, `Nome da Unidade da Federação`) %>% 
+  rename(CodMun =`Código do Município`,Pib_Municipal_2018 =`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, Regiao = `Nome da Grande Região`,UF = `Nome da Unidade da Federação`)
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  left_join(munic_pib_filtrado, by = "CodMun") %>% 
+  select(-Ano, -Regiao, -UF.y) %>% 
+  rename(UF = UF.x) 
+
+# Indice de Gini:
+# O Índice de Gini mede o grau de concentração de renda em determinado grupo e varia de 0 a 1, sendo 0 uma situação de completa igualdade, e 1 # uma situação de completa desigualdade.
+
+# dados de 2010 coletado do site do SEBRAE: https://datasebraeindicadores.sebrae.com.br/resources/sites/data-sebrae/data-sebrae.html#/Indices-de-desenvolvimento
+
+indice_gini <- tibble(Munic=c("Abaeté", "Agudos", "Anicuns", "Aquiraz",
+                      "Arceburgo", "Aruanã", "Campo Belo", "Cerquilho", 
+                      "Cláudio", "Dourado", "Eusébio", "Faxinal", "Holambra",  "Itatiaiuçu", 
+                      "Ivaiporã", "Macatuba", "Maricá", "Monte Carmelo", "Morungaba","Muzambinho","Pedro Osório", 
+                      "Pirapora do Bom Jesus", "Pitanga", "Potirendaba","Silva Jardim", "Vargem Grande Paulista","Wenceslau Braz"),
+       Indice_Gini=c(0.5, 0.43, 0.48, 0.5, 0.38, 0.52, 0.48, 0.42, 0.41, 0.38, 0.66, 0.49, 0.55, 0.41, 0.49, 0.55, 0.51, 0.5, 0.45, 0.47, 0.5, 0.49, 0.53, 0.4, 0.51, 0.52, 0.52))
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  left_join(indice_gini, by = "Munic") 
+
+# Plano de Mobilidade 
+
+# retirado do site oficial do governo: https://www.gov.br/mdr/pt-br/assuntos/mobilidade-e-servicos-urbanos/planejamento-da-mobilidade-urbana/levantamento-sobre-a-situacao-dos-planos-de-mobilidade-urbana
+
+plano_mob <- plano_mob %>%
+  select (`código do município - IBGE`,`Possui Plano de Mobilidade Urbana`, `Ano de elaboração`, `Aprovado em lei ou ato normativo`,`Instrumento Legal`,`Nº da Lei`) %>% 
+  rename(CodMun = `código do município - IBGE`)
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  left_join(plano_mob, by = "CodMun")
+
+
+```
+
+Esses são os municípios que adotaram a política de tarifa zero no transporte público coletivo: 
+
+```{r}
+options(scipen=999)
+munic_isencao_tarifa %>% 
+  select(UF, Munic, `POP EST`,ano_implementacao) %>% 
+  arrange(`POP EST`) %>% 
+  kable(digits=1, col.names=c("UF","Município","População", "Ano da Implementação")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Esses são os Estados que possuem municípios com políticas de tarifa zero, os pontos representam os municípios: 
+
+```{r include=FALSE}
+# Download dos Estados e Municípios: 
+
+muni_geobr_1 <- read_municipality(code_muni="all", year=2018)
+
+geo_ufs <- read_state(code_state = 'all', year = 2018)
+
+```
+
+```{r}
+# Estados: 
+
+munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+  mutate(Tarifa_zero = "sim")
+
+munic_isencao_tarifa_uf <- munic_isencao_tarifa %>% 
+  select(`COD UF`,Tarifa_zero) %>% 
+  distinct() %>% 
+  rename(code_state=`COD UF`)
+
+geo_ufs_2 <- geo_ufs  %>% 
+  left_join(munic_isencao_tarifa_uf, by = c("code_state")) %>% 
+  replace(is.na(.), "não")
+
+# municipios: 
+
+munic_isencao_tarifa_muni <- munic_isencao_tarifa %>% 
+  rename(code_muni= CodMun) %>% 
+  select(code_muni,Tarifa_zero) %>% 
+  distinct()
+
+muni_geobr_3 <- muni_geobr_1 %>% 
+  left_join(munic_isencao_tarifa_muni, by = c("code_muni")) %>% 
+  replace(is.na(.), "não") %>% 
+  st_centroid() %>% 
+  filter(Tarifa_zero == "sim")
+
+# gráfico de mapa colocando os municípios dentro de seus respectivos estados: 
+
+geo_ufs_2 %>% 
+  st_as_sf(coords=c("geom")) %>%
+  ggplot() +
+  geom_sf(aes(geometry = geom,
+             fill = as.character(Tarifa_zero)))  +
+  geom_sf(data=muni_geobr_3) +
+  theme_minimal()+
+  scale_fill_manual(values = wes_palette("Moonrise2")) +
+  labs(fill = "Tem política de Tarifa zero?")
+
+```
+
+
+
+```{r}
+munic_isencao_tarifa %>% 
+  group_by(REGIAO) %>%
+  tally() %>% 
+  arrange(-n) %>% 
+  ggplot(aes(x ="", y=n, fill=REGIAO)) + 
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0, direction = -1) +
+  geom_text(aes(x ="", y=n, label = n),
+              position = position_stack(vjust = 0.7)) +
+  xlab("") +
+  ylab("") +
+  ggtitle("Regiões dos municípios") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid=element_blank(),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),
+    axis.text.x=element_blank(),
+    legend.title = element_blank())
+```
+
+
+
+```{r}
+  munic_isencao_tarifa %>% group_by(UF) %>%
+  tally() %>% 
+  ggplot(aes(x= n, y = reorder(UF, n))) + 
+  geom_col(width = 0.9, fill = "lightblue",colour="black") +
+  xlab("") +
+  ylab("") +
+  ggtitle("Qtd de Municípios por Estado") +
+  geom_label(aes(x = n, y=UF, label = n), 
+             position = position_stack(vjust = 0.8)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x=element_blank(),
+    legend.title = element_blank())+
+  theme_classic()
+```
+
+
+
+```{r}
+
+munic_isencao_tarifa %>% group_by(ano_implemen_resumido) %>% 
+  tally() %>% 
+  ggplot(aes(x=ano_implemen_resumido, y =n)) + 
+  geom_col(width = 0.9, fill = "lightgreen",colour="black") +
+  xlab("") +
+  ylab("") +
+  ggtitle("Ano de implementação") +
+  scale_discrete_manual(aes(x =ano_implemen_resumido, y=n, 
+  breaks = c("0", "3", "6", "9"))) +
+  geom_label(aes(x =ano_implemen_resumido, y=n, label = n), 
+             position = position_stack(vjust = 0.8)) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x=element_blank(),
+    legend.title = element_blank())+
+  theme_classic()
+
+```
+
+
+
+```{r}
+
+classe_pop_munic_interesse <- munic_isencao_tarifa %>%
+  group_by(`CLASSE POP`) %>% 
+  tally() 
+
+classe_pop_munic_geral <- munic_pop %>%
+  group_by(`CLASSE POP`) %>% 
+  tally() 
+ 
+  munic_pop$`CLASSE POP` <-  gsub("1 - Até 5000","Até 5.000", munic_pop$`CLASSE POP`) 
+  munic_pop$`CLASSE POP` <-  gsub("2 - 5001 até 10000","5.000 Até 10.000", munic_pop$`CLASSE POP`) 
+  munic_pop$`CLASSE POP` <-  gsub("3 - 10001 até 20000","10.000 Até 20.000", munic_pop$`CLASSE POP`) 
+  munic_pop$`CLASSE POP` <-  gsub("4 - 20001 até 50000","20.000 Até 50.000", munic_pop$`CLASSE POP`) 
+  munic_pop$`CLASSE POP` <-  gsub("5 - 50001 até 100000","50.000 Até 100.000",  munic_pop$`CLASSE POP`) 
+  munic_pop$`CLASSE POP` <-  gsub("6 - 100001 até 500000","100.000 Até 500.000", munic_pop$`CLASSE POP`)  
+  
+  
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+classe_pop_munic_interesse %>% 
+  inner_join(classe_pop_munic_geral, by = "CLASSE POP") %>% 
+  kable(digits=1, col.names=c("Classe Populacional", "Qtd de Munic.de Interesse","Qtd de Munic. no Brasil")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+
+```
+
+
+
+Esses são os Municípios que possuem plano de mobilidade urbana como estabelecido pela Lei Federal nº 12.587/2012, segundo levantamento da 
+Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB), foi atualizado pela última vez em fevereiro de 2019
+
+```{r echo=FALSE}
+tab_plano_mob <- munic_isencao_tarifa %>% 
+  filter(`Possui Plano de Mobilidade Urbana`== "Sim") %>% 
+  select(UF, Munic, `CLASSE POP`, `Ano de elaboração`,`Aprovado em lei ou ato normativo`, `Instrumento Legal`, `Nº da Lei`)
+
+tab_plano_mob %>% 
+  kable(digits=2, col.names=c("UF", "Municipio", "Classe Populacional", "Ano de elaboração", "Aprovado em lei ou ato normativo", "Instrumento Legal","Nº da Lei")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+# DT::datatable(tab_plano_mob,rownames = FALSE)
+
+```
+
+ìndice de Gini dos municípios referente a 2010 - O Índice de Gini mede o grau de concentração de renda em determinado grupo e varia de 0 a 1, sendo 0 uma situação de completa igualdade, e 1 uma situação de completa desigualdade.
+
+
+
+```{r}
+media_indice_gini_geral <- munic_isencao_tarifa %>% 
+  summarize(mean(Indice_Gini)) %>% 
+  pull()
+```
+
+A média geral do índice de Gini nos municípios estudados é de `r media_indice_gini_geral `
+
+Por Região: 
+
+```{r}
+munic_isencao_tarifa %>% 
+  group_by(REGIAO) %>% 
+ summarize(across(c(Indice_Gini), 
+                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
+  kable(digits=2, col.names=c("Região", "Media", "Mediana", "Desvio Padrão")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Por Estado: 
+
+```{r}
+munic_isencao_tarifa %>% 
+  group_by(UF) %>% 
+ summarize(across(c(Indice_Gini), 
+                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
+  kable(digits=2, col.names=c("Região", "Media", "Mediana", "Desvio Padrão")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros: 
+
+```{r}
+munic_pib_filtrado_geral <- munic_pib_filtrado %>% 
+  summarize(across(c(Pib_Municipal_2018), 
+                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
+   mutate(Municipios = "Municipios em Geral")
+
+munic_pib_filtrado_interesse <- munic_isencao_tarifa %>% 
+  summarize(across(c(Pib_Municipal_2018), 
+                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
+   mutate(Municipios = "Municipios de Interesse")
+  
+munic_pib_filtrado_geral %>% 
+  full_join(munic_pib_filtrado_interesse) %>% 
+  select(Municipios,Pib_Municipal_2018_media, Pib_Municipal_2018_mediana, Pib_Municipal_2018_desvio_padrão) %>% 
+  kable(digits=0, col.names=c("Municipios", "Media", "Mediana", "Desvio Padrão")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
+Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros, por região:
+
+```{r}
+munic_pib_filtrado_geral_regiao <- munic_pib_filtrado %>%  
+  group_by(Regiao) %>% 
+  summarize(Media_munic_geral = mean(Pib_Municipal_2018)) %>% 
+  rename(REGIAO = Regiao) %>% 
+  mutate(REGIAO = gsub("Centro-oeste" ,"Centro Oeste",REGIAO))
+               
+munic_pib_filtrado_interesse_regiao <- munic_isencao_tarifa %>%
+  group_by(REGIAO) %>% 
+  summarize(Media_munic_interesse = mean(Pib_Municipal_2018))
+
+
+munic_pib_filtrado_geral_regiao %>% 
+  left_join(munic_pib_filtrado_interesse_regiao, by = "REGIAO") %>% 
+  filter(REGIAO != "Norte") %>% 
+  kable(digits=0, col.names=c("Região", "Media Munic. em Geral", "Media Munic. de Interesse")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
+Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros, por Estado:
+
+```{r}
+munic_pib_filtrado_geral_regiao <- munic_pib_filtrado %>%  
+  group_by(UF) %>% 
+  summarize(Media_munic_geral = mean(Pib_Municipal_2018)) 
+
+               
+munic_pib_filtrado_interesse_regiao <- munic_isencao_tarifa %>% 
+  group_by(UF) %>% 
+  summarize(Media_munic_interesse = mean(Pib_Municipal_2018))
+
+
+munic_pib_filtrado_interesse_regiao %>% 
+  left_join(munic_pib_filtrado_geral_regiao, by = "UF") %>% 
+  kable(digits=0, col.names=c("Região", "Media Munic. em Geral", "Media Munic. de Interesse")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
+Comparação entre o IDHM médio dos municípios brasileiros e o IDHM médio dos municípios que adotaram a política de tarifa zero: 
+ 
+
+```{r}
+# IDH dos municípios - média, mediana e desvio padrão 
+
+munic_interesse <- munic_isencao_tarifa %>% 
+  summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
+                         list(media=mean))) %>% 
+  mutate(Municipios = "Municípios de Interesse")
+
+munic_em_geral <- munic_idh %>% summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
+                         list(media=mean))) %>% 
+  mutate(Municipios = "Municípios em Geral")
+
+munic_interesse %>% full_join(munic_em_geral) %>% 
+  select(Municipios,`IDHM_media`, `IDHM Renda_media`, `IDHM Educação_media`, `IDHM Longevidade_media`) %>% 
+  kable(digits=2, col.names=c("Municipios", "IDHM", "IDHM Renda", "IDHM Educação", "IDHM Longevidade")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+  
+```
+
+
+Média dos valores do IDHM dos municípios estudados por região: 
+
+```{r}
+# IDH dos municípios - média, mediana e desvio padrão 
+
+munic_isencao_tarifa %>% group_by(REGIAO) %>% 
+  summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
+                         list(media=mean))) %>% 
+  kable(digits=2, col.names=c("Região", "IDHM", "IDHM Renda", "IDHM Educação", "IDHM Longevidade")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Comparação entre o IDHM médio dos municípios brasileiros e o IDHM médio dos municípios que adotaram a política de tarifa zero, por estado: 
+
+```{r echo=FALSE}
+# IDH dos municípios 
+
+munic_interesse_uf <- munic_isencao_tarifa %>% 
+  group_by(UF) %>% 
+  summarize(media_IDH_uf_interesse = mean(IDHM)) 
+                        
+munic_em_geral_uf <- 
+  munic_idh %>% 
+  group_by(UF) %>% 
+  summarize(media_IDH_uf_geral = mean(IDHM)) 
+
+  munic_em_geral_uf$UF <-  gsub("CE","Ceará", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("GO","Goiás", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("MG","Minas Gerais", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("PR","Paraná", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("RJ","Rio de Janeiro", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("RS","Rio Grande do Sul", munic_em_geral_uf$UF) 
+  munic_em_geral_uf$UF <-  gsub("SP","São Paulo", munic_em_geral_uf$UF) 
+
+munic_interesse_uf %>% 
+  inner_join(munic_em_geral_uf, by = "UF") %>% 
+  kable(digits=2, col.names=c("UF", "Municípios de Interesse", "Todos os Municípios")) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+munic_inner_join <- munic_interesse_uf %>% 
+  inner_join(munic_em_geral_uf, by = "UF")
+ 
+```
+ 
+ Media, Mediana e Desvio Padrão da Posição no Ranking do IDHM: 
+ 
+```{r}
+
+munic_isencao_tarifa %>% group_by(REGIAO) %>% 
+  summarize(across(c(`Posição IDHM`), 
+                         list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
+  kable(digits=0, col.names=c("Região", "Media", "Mediana","Desvio Padrão")) %>%
+  kable_classic(full_width = F, html_font = "Cambria") 
+
+```
+ 
+ 
+ 
+```{r eval=FALSE, include=FALSE}
+
+# taxa de urbanização nas cidades onde tem a tarifa zero
+
+urban_conc <- read_urban_concentrations(year = 2015)
+
+urban_conc_1 <- urban_conc %>% 
+  left_join(munic_isencao_tarifa_muni, by = c("code_muni")) %>% 
+  replace(is.na(.), "não") %>% 
+  filter(Tarifa_zero == "sim")
+
+urban_conc_1 %>% as_tibble()
+
+taxa_urbanizacao <- urban_conc_1 %>% 
+  group_by(code_muni) %>% 
+  mutate(taxa_urbanizacao = 100* pop_urban_2010/pop_total_2010)
+
+
+geo_ufs_3 <- geo_ufs_2 %>% filter(abbrev_state == "CE" | 
+                                  abbrev_state == "SP" | 
+                                  abbrev_state == "MG" |
+                                  abbrev_state == "RJ")
+
+urban_area <- read_urban_area(year = 2015, simplified = TRUE, showProgress = TRUE)
+
+urban_area <- urban_area %>% as_tibble()
+
+sheet_write(munic_isencao_tarifa, ss = "https://docs.google.com/spreadsheets/d/1c5SD24EZvQPEmzCXVB398kOcXrgbpMcdSU4VHof1XXs/edit?usp=sharing", sheet = 3) 
+```
+
+
+
+
+
