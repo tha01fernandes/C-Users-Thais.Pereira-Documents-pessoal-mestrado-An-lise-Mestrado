@@ -1,20 +1,19 @@
 ---
-title: "Projeto Final"
+title: Projeto Final - Análise dos municípios que adotaram política de isenção de
+  tarifa no transporte público
 author: "Thais Fernandes"
-date: "06/06/2021"
+date: "Julho de 2021"
 output:
   html_document:
     df_print: paged
-    theme: cosmo
-    highlight: kate
-  pdf_document: default
+    theme: paper
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, out.width="50%"}
 (knitr::opts_chunk$set(echo=FALSE, error=FALSE, warning=FALSE, message=FALSE)) 
 ```
 
-```{r}
+```{r Pacotes}
 library("tidyverse")
 library("kableExtra")
 library("knitr")
@@ -29,14 +28,18 @@ library("sf")
 library("wesanderson")
 library("ggplot2")
 library("stringr")
-
+library("stargazer")
+library("prettydoc")
+library("googlesheets4")
+library("googledrive")
 ```
 
-```{r}
+```{r baixando arquivos}
 
 # Arquivos 
 
-setwd("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/Análise Mestrado")
+setwd("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/analise_mestrado/arquivos_da_analise")
+
 
 munic_pop <- read_excel("Base_MUNIC_2019.xlsx")
 
@@ -44,152 +47,188 @@ munic_rh <- read_excel("Base_MUNIC_2019.xlsx", "Recursos humanos")
 
 munic_idh <- read_excel("idh_muni.xlsx") 
 
-munic_pib <- read_excel("PIB dos Municípios - base de dados 2010-2018.xls") 
+munic_pib <- read_excel("PIB dos Municípios - base de dados 2010-2018.xls")
 
-plano_mob <- read_excel("PlanosdeMobilidadeUrbana.xlsx") 
+plano_mob <- read_excel("PlanosdeMobilidadeUrbana.xlsx")
+
+munic_gini <- read_delim("ginibr.csv", delim = ";", 
+                    locale = locale(encoding='latin1'))
+ 
 ```
 
-```{r}
-# Tabela com a população dos municípios que adotaram a política de tarifa zero no transporte: 
+```{r Organização da base Parte 1}
 
-munic_isencao_tarifa <- munic_pop %>% filter(`NOME MUNIC` == "Maricá" | 
-                      `NOME MUNIC` == "Itatiaiuçu" |
-                      `NOME MUNIC` == "Holambra" | 
-                      `NOME MUNIC` == "Eusébio" |
-                      `NOME MUNIC` == "Agudos" | 
-                      `NOME MUNIC` == "Vargem Grande Paulista" | 
-                      `NOME MUNIC` == "Macatuba" |
-                      `NOME MUNIC` == "Potirendaba" | 
-                      `NOME MUNIC` == "Wenceslau Braz"| 
-                      `NOME MUNIC` == "Pitanga"|
-                      `NOME MUNIC` == "Ivaiporã"| 
-                      `NOME MUNIC` == "Monte Carmelo"|
-                      `NOME MUNIC` == "Pirapora do Bom Jesus"| 
-                      `NOME MUNIC` == "Silva Jardim"|
-                      `NOME MUNIC` == "Muzambinho"|
-                      `NOME MUNIC` == "Campo Belo"| 
-                      `NOME MUNIC` == "Anicuns" | 
-                      `NOME MUNIC` == "Faxinal"| 
-                      `NOME MUNIC` == "Arceburgo"| 
-                      `NOME MUNIC` == "Cláudio"| 
-                      `NOME MUNIC` == "Abaeté"| 
-                      `NOME MUNIC` == "Aruanã"|
-                      `NOME MUNIC` == "Dourado"| 
-                      `NOME MUNIC` == "Cerquilho"| 
-                      `NOME MUNIC` == "Pedro Osório"|
-                      `NOME MUNIC` == "Aquiraz"|
-                      `NOME MUNIC` == "Morungaba") 
-  
-  munic_isencao_tarifa <- munic_isencao_tarifa %>% filter(CodMun != 3172202)
+# organizando o banco de dados completo com todos os municípios e distiguindo os municícpio com FFPT
 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("1 - Até 5000","Até 5.000", munic_isencao_tarifa$`CLASSE POP`) 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("2 - 5001 até 10000","5.000 Até 10.000", munic_isencao_tarifa$`CLASSE POP`) 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("3 - 10001 até 20000","10.000 Até 20.000", munic_isencao_tarifa$`CLASSE POP`) 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("4 - 20001 até 50000","20.000 Até 50.000", munic_isencao_tarifa$`CLASSE POP`) 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("5 - 50001 até 100000","50.000 Até 100.000", munic_isencao_tarifa$`CLASSE POP`) 
-  munic_isencao_tarifa$`CLASSE POP` <-  gsub("6 - 100001 até 500000","100.000 Até 500.000", munic_isencao_tarifa$`CLASSE POP`) 
-  
-  munic_isencao_tarifa$REGIAO <-  gsub("3 - Sudeste","Sudeste", munic_isencao_tarifa$REGIAO) 
-  munic_isencao_tarifa$REGIAO <-  gsub("4 - Sul","Sul", munic_isencao_tarifa$REGIAO) 
-  munic_isencao_tarifa$REGIAO <-  gsub("5 - Centro-Oeste","Centro Oeste", munic_isencao_tarifa$REGIAO) 
-  munic_isencao_tarifa$REGIAO <-  gsub("2 - Nordeste","Nordeste", munic_isencao_tarifa$REGIAO) 
-  
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-  mutate(`CLASSE POP` = factor(`CLASSE POP`, levels = c("Até 5.000", 
-    "5.000 Até 10.000", "10.000 Até 20.000", "20.000 Até 50.000", "50.000 Até 100.000", "100.000 Até 500.000", ordered = T)))
+banco_completo <- munic_pop %>%
+  mutate(tarifa_zero = case_when(
+   `NOME MUNIC` == "Maricá" ~ "sim" , `NOME MUNIC` == "Itatiaiuçu"~ "sim" ,`NOME MUNIC` == "Holambra"~ "sim" , `NOME MUNIC` == "Eusébio"~ "sim" ,`NOME MUNIC` == "Agudos" ~ "sim" ,`NOME MUNIC` == "Vargem Grande Paulista"~ "sim"  ,`NOME MUNIC` == "Macatuba"~ "sim"  ,`NOME MUNIC` == "Potirendaba"~ "sim" , `NOME MUNIC` == "Wenceslau Braz"~ "sim" , `NOME MUNIC` == "Pitanga"~ "sim" ,`NOME MUNIC` == "Ivaiporã"~ "sim" ,`NOME MUNIC` == "Monte Carmelo"~ "sim" ,`NOME MUNIC` == "Pirapora do Bom Jesus"~ "sim" ,`NOME MUNIC` == "Silva Jardim"~ "sim" ,`NOME MUNIC` == "Muzambinho"~ "sim" ,`NOME MUNIC` == "Campo Belo"~ "sim" ,`NOME MUNIC` == "Anicuns"~ "sim"  , `NOME MUNIC` == "Faxinal"~ "sim" ,`NOME MUNIC` == "Arceburgo"~ "sim" ,`NOME MUNIC` == "Cláudio"~ "sim" , `NOME MUNIC` == "Abaeté"~ "sim" ,`NOME MUNIC` == "Aruanã"~ "sim" ,`NOME MUNIC` == "Dourado"~ "sim" ,`NOME MUNIC` == "Cerquilho"~ "sim" ,`NOME MUNIC` == "Pedro Osório"~ "sim" ,`NOME MUNIC` == "Aquiraz"~ "sim" ,`NOME MUNIC` == "Morungaba"~ "sim", TRUE ~ "não")) %>% 
+  mutate(tarifa_zero = case_when(CodMun == 3172202 ~ "não", TRUE~tarifa_zero)) %>% 
+  mutate(`CLASSE POP` = gsub(pattern = "1 -|2 -|3 -|4 -|5 -|6 -|7 -",replacement = "",`CLASSE POP`)) %>% 
+  mutate(REGIAO = gsub(pattern = "1 -|2 -|3 -|4 -|5 -",replacement = "", REGIAO)) %>% 
+  mutate(`CLASSE POP` = gsub("Até 5000","Até 5.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("5001 até 10000","5.000 Até 10.000", `CLASSE POP`)) %>%  
+  mutate(`CLASSE POP` = gsub("10001 até 20000","10.000 Até 20.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("20001 até 50000","20.000 Até 50.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("50001 até 100000","50.000 Até 100.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("100001 até 500000","100.000 Até 500.000",`CLASSE POP`)) %>%
+  mutate(`CLASSE POP` = gsub("Maior que 500000","Maior que 500.000", `CLASSE POP`)) %>% 
+  rename(Munic = `NOME MUNIC`)
 
+```
+
+```{r Organização da base Parte 2}
 # Ano de implatanção da Política
 
-# Essa informação foi coletada da dissertação de Mestrado de MArijke Vermander, "EXPLORING FARE-FREE PUBLIC
-# TRANSPORT IN BRAZIL Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities"
+# Essa informação foi coletada da dissertação de Mestrado de Marijke Vermander, "EXPLORING FARE-FREE PUBLIC
+# TRANSPORT IN BRAZIL Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities, 2021"
 
-ano_implementacao <- tibble(Munic=c("Abaeté", "Agudos", "Anicuns", "Aquiraz",
-                      "Arceburgo", "Aruanã", "Campo Belo", "Cerquilho", 
-                      "Cláudio", "Dourado", "Eusébio", "Faxinal", "Holambra",  "Itatiaiuçu", 
-                      "Ivaiporã", "Macatuba", "Maricá", "Monte Carmelo", "Morungaba","Muzambinho","Pedro Osório", 
-                      "Pirapora do Bom Jesus", "Pitanga", "Potirendaba","Silva Jardim", "Vargem Grande Paulista","Wenceslau Braz"),
+ano_implementacao <- tibble(CodMun=c(3100203, 3500709, 5201306, 2301000,
+                      3104106, 5202502, 3111200, 3511508, 
+                      3116605, 3514304, 2304285, 4107603, 3519055,3133709, 
+                      4111506, 3528007, 3302700, 3143104, 3532009,3144102,4314209, 
+                      3539103,4119608, 3540804,3305604, 3556453,4128500),
        ano_implementacao=c(1997, 2003, 2014, 2018, 2019, 2008, 2019, 2020, 2021, 
              2014, 2010, 2001, 2010, 2015, 2001, 2004, 2013, 1994,2019,2011,2018,2020, 2012, 1998, 2014,2019, 2008), 
        ano_implemen_resumido=c("Até anos 2000", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2001 e 2009", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2001 e 2009", "Entre 2010 e 2015", "Até anos 2000", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Até anos 2000", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2001 e 2009"))
 
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-  rename(Munic = `NOME MUNIC`)
+banco_completo_1 <- banco_completo %>% 
+  left_join(ano_implementacao, by = "CodMun")
 
-munic_isencao_tarifa <- ano_implementacao %>% 
-  left_join(munic_isencao_tarifa, by = "Munic")
+```
 
-# ìndice de Desenvolvimento Humano Municipal (IDHM):
-
-# dados de 2010 coletado do site oficial da PNUD Brasil: https://www.br.undp.org/content/brazil/pt/home/idh0/rankings/idhm-municipios-2010.html
-
-munic_idh <- munic_idh %>% 
-  separate(Territorialidade, c("Munic","UF"), "\\(") %>% 
-  separate(UF, c("UF","Parentesis"), "\\)") %>% 
-  select(-3)
-
-munic_idh$Munic <- trimws(munic_idh$Munic)
-
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-inner_join(munic_idh, by = "Munic") %>% 
-  select(-UF.y) %>% filter(CodMun != 3172202) %>% 
-  distinct(Munic, .keep_all = TRUE) %>% 
-  rename(UF = UF.x) 
-
+```{r Organização da base Parte 3}
 # PIB dos municípios, IBGE 2018: 
 
 munic_pib_filtrado <- munic_pib %>% 
   filter(Ano == 2018) %>% 
-  select(Ano, `Código do Município`,`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, `Nome da Grande Região`, `Nome da Unidade da Federação`) %>% 
-  rename(CodMun =`Código do Município`,Pib_Municipal_2018 =`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, Regiao = `Nome da Grande Região`,UF = `Nome da Unidade da Federação`)
+  select(Ano, `Código do Município`,`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, `Nome da Grande Região`, `Sigla da Unidade da Federação`) %>% 
+  rename(CodMun =`Código do Município`,Pib_Municipal_2018 =`Produto Interno Bruto per capita, \na preços correntes\n(R$ 1,00)`, Regiao = `Nome da Grande Região`, UF = `Sigla da Unidade da Federação`)
 
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
+banco_completo_2 <- banco_completo_1 %>% 
   left_join(munic_pib_filtrado, by = "CodMun") %>% 
-  select(-Ano, -Regiao, -UF.y) %>% 
-  rename(UF = UF.x) 
+  select(-Ano, -Regiao) %>% 
+  rename(UF = UF.y)
 
+```
+
+```{r Organização da base Parte 4}
+# ìndice de Desenvolvimento Humano Municipal (IDHM):
+
+# dados de 2010 coletado do site oficial da PNUD Brasil: https://www.br.undp.org/content/brazil/pt/home/idh0/rankings/idhm-municipios-2010.html
+# Os dados fornecidos nesse site da PNUD estão sem o código do município e alguns municípios mudaram de nome:Presidente Juscelino (RN) que agora se chama "Serra Caiada", Santarém (PB) que agora se chama "Joca Claudino" e Seridó (PB) que se chamada São Vicente do Seridó.Para juntar essa base de dados com a minha base que tem código municipal tive que fazer adequações em nomes dos municípios para que ficassem iguais, usei anti_join primeiramente pra verificar os nomes diferentes, ajustei os nomes manualmente no excel, salvei e baixei novamente o csv e fiz uma junção de dados levando em conta a UF e o nome do município. Cinco municípios não tem a informação do IDHM, são eles: Mojuí dos Campos (PR), Pescaria Brava (SC), Balneário Rincão (SC), Pinto Bandeira (RS) e Paraíso das Águas (MTS)  
+
+munic_idh_1 <- munic_idh %>% 
+  separate(Territorialidade, c("Munic","UF"), "\\(") %>% 
+  separate(UF, c("UF","Parentesis"), "\\)") %>% 
+  select(-3)
+
+munic_idh_1$Munic <- trimws(munic_idh_1$Munic)
+
+ banco_completo_3 <- banco_completo_2 %>% 
+   left_join(munic_idh_1, by = c("Munic", "UF"))
+ 
+
+```
+
+```{r Organização da base Parte 5}
 # Indice de Gini:
 # O Índice de Gini mede o grau de concentração de renda em determinado grupo e varia de 0 a 1, sendo 0 uma situação de completa igualdade, e 1 # uma situação de completa desigualdade.
 
-# dados de 2010 coletado do site do SEBRAE: https://datasebraeindicadores.sebrae.com.br/resources/sites/data-sebrae/data-sebrae.html#/Indices-de-desenvolvimento
+# dados de 2010 no site do SEBRAE: https://datasebraeindicadores.sebrae.com.br/resources/sites/data-sebrae/data-sebrae.html#/Indices-de-desenvolvimento
 
-indice_gini <- tibble(Munic=c("Abaeté", "Agudos", "Anicuns", "Aquiraz",
-                      "Arceburgo", "Aruanã", "Campo Belo", "Cerquilho", 
-                      "Cláudio", "Dourado", "Eusébio", "Faxinal", "Holambra",  "Itatiaiuçu", 
-                      "Ivaiporã", "Macatuba", "Maricá", "Monte Carmelo", "Morungaba","Muzambinho","Pedro Osório", 
-                      "Pirapora do Bom Jesus", "Pitanga", "Potirendaba","Silva Jardim", "Vargem Grande Paulista","Wenceslau Braz"),
-       Indice_Gini=c(0.5, 0.43, 0.48, 0.5, 0.38, 0.52, 0.48, 0.42, 0.41, 0.38, 0.66, 0.49, 0.55, 0.41, 0.49, 0.55, 0.51, 0.5, 0.45, 0.47, 0.5, 0.49, 0.53, 0.4, 0.51, 0.52, 0.52))
+# estou utilizando o dados de todos os municípios coletado no site do datasus: http://tabnet.datasus.gov.br/cgi/ibge/censo/cnv/ginibr.def
 
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-  left_join(indice_gini, by = "Munic") 
+munic_gini_1 <- munic_gini[-1,]
+munic_gini_2 <- munic_gini_1 [-1,]
+names(munic_gini_2) <- c("municipio", "indice_gini_1991", "indice_gini_2000", "indice_gini_2010")
 
+munic_gini_3 <-  munic_gini_2 %>% 
+  separate(municipio, c("CodMun_gini","munic"), 6) %>% 
+  mutate(indice_gini_2010 = gsub(",",".",indice_gini_2010)) %>% 
+  mutate(indice_gini_2000 = gsub(",",".",indice_gini_2000)) %>% 
+  mutate(indice_gini_1991 = gsub(",",".",indice_gini_1991))
+
+# O código do município da tabela do índice de gini corresponde aos mesmos números da base do IBGE,excetuando-se o último número, por isso 
+# eu criei uma coluna com essa variável antes de juntar as bases. 
+# Na tabela do Datasus não há dados para dois municípios: Mojuí dos Campos (PR), Pescaria Brava (SC), Balneário Rincão (SC), Pinto Bandeira (RS) e Paraíso das Águas (MTS)   
+
+banco_completo_4 <-  banco_completo_3 %>% 
+  separate(CodMun, c("CodMun_gini","cod"), 6) %>% 
+  left_join(munic_gini_3, by = "CodMun_gini") %>%  # as duas linhas que estão apenas na base munic_gini_3 não são municípios
+  unite("CodMun", c(CodMun_gini, cod), sep = "") %>% 
+  select(-munic)
+
+banco_completo_4$indice_gini_2010 <- as.double(banco_completo_4$indice_gini_2010)
+banco_completo_4$indice_gini_2000 <- as.double(banco_completo_4$indice_gini_2000)
+banco_completo_4$indice_gini_1991 <- as.double(banco_completo_4$indice_gini_1991)
+
+```
+
+```{r Organização da base Parte 6}
 # Plano de Mobilidade 
 
 # retirado do site oficial do governo: https://www.gov.br/mdr/pt-br/assuntos/mobilidade-e-servicos-urbanos/planejamento-da-mobilidade-urbana/levantamento-sobre-a-situacao-dos-planos-de-mobilidade-urbana
 
-plano_mob <- plano_mob %>%
-  select (`código do município - IBGE`,`Possui Plano de Mobilidade Urbana`, `Ano de elaboração`, `Aprovado em lei ou ato normativo`,`Instrumento Legal`,`Nº da Lei`) %>% 
-  rename(CodMun = `código do município - IBGE`)
+  plano_mob_1 <- plano_mob %>%
+  select (`código do município - IBGE`,`Possui Plano de Mobilidade Urbana`, 
+          `Ano de elaboração`, `Aprovado em lei ou ato normativo`,
+          `Instrumento Legal`,`Nº da Lei`) %>% 
+ rename(CodMun = `código do município - IBGE`)
 
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-  left_join(plano_mob, by = "CodMun")
+ banco_completo_4$CodMun <- as.numeric(banco_completo_4$CodMun)
+
+ banco_completo_5 <- banco_completo_4 %>% 
+  left_join(plano_mob_1, by = "CodMun") # # as duas linhas que estão apenas na base munic_gini_3 não são municípios, são NA
+
+```
+
+```{r Organização da base Parte 7}
+# Para obter a taxa de população urbana foram utilizados os arquivos de população total do censo 2010, encontrados no site do IBGE, no link: https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html
+# Não há informação para 107 municípios 
+
+larquivos <- list.files("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/analise_mestrado/arquivos_da_analise/pop_urbana",full.names=TRUE)
+arquivos <- sapply(larquivos, read_excel,simplify = F)
+arquivos <- do.call(rbind.data.frame, arquivos)
+
+  munic_taxa_urbanizacao <- arquivos
+
+  taxa_urbanizacao <- munic_taxa_urbanizacao %>% 
+  mutate(taxa_urbanizacao = 100* `Total da população urbana`/ `Total da população 2010`) %>% 
+  select(`Código do município`, `Nome do município`,`Total da população urbana`,`Total da população rural`, taxa_urbanizacao) %>% 
+  rename(CodMun = `Código do município`) %>% 
+  filter(CodMun != "Total" & CodMun != "Fonte: IBGE, Resultados do Censo 2010.")
+  
+  taxa_urbanizacao$CodMun <- as.numeric(taxa_urbanizacao$CodMun)
+
+  banco_completo_6 <- banco_completo_5 %>% 
+  left_join(taxa_urbanizacao, by = "CodMun") %>% 
+  select(- `Nome do município`)
 
 
 ```
 
-Esses são os municípios que adotaram a política de tarifa zero no transporte público coletivo: 
+   1.  Apresentação do objeto de estudo, recorte empírico e municípios estudados
 
-```{r}
-options(scipen=999)
-munic_isencao_tarifa %>% 
-  select(UF, Munic, `POP EST`,ano_implementacao) %>% 
-  arrange(`POP EST`) %>% 
-  kable(digits=1, col.names=c("UF","Município","População", "Ano da Implementação")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+O objeto de estudo da pesquisa a qual esse relatório se refere tem como recorte empírico o estudo de 27 cidades brasileiras que adotaram a isenção integral da tarifa do transporte público. Para a seleção dos casos foram utilizados dois critérios definidos por Klebowski (2019) para o estudo do que o autor conceitua como Free Fare Public Transport: i. A política foi implantada na maioria das redes de transporte da cidade; ii. Está disponível para a maioria dos seus usuários, durante a maior parte do tempo. Este autor define a política de isenção de tarifa no transporte público como uma forma particular de subsídio público adotada por governos locais em duas principais modalidades: parcial e completa. O foco principal dessa agenda de pesquisa é o estudo da política em seu formato completo, ou seja, o subsídio integral do valor da tarifa, sendo um dos objetivos centrais entender quais são os motivos que levam um governo local a adotar essa política.Também utilizaremos o termo FFTP para se referir a política, abreviação de Free Fare Public Transport, também seguindo Klebowski (2019).Esse relatório é uma análise exploratória de dados públicos a respeito dos municípios estudados. 
+Abaixo há uma tabela com o nome dos municípios, data de implementação da política e unidade federativa, essas informações foram coletadas, além de pesquisa própria, da dissertação de mestrado de Marijke Vermander (2021),"Exploring Fare-Free Public Transport in Brasil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalitie". 
+
+```{r Tabela inicial, out.width = "60%"}
+
+  options(scipen=999)
+  banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>% 
+  select(UF, Munic,ano_implementacao) %>% 
+  kable(digits=1, col.names=c("UF","Município","Ano da Implementação")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
+
 ```
 
-Esses são os Estados que possuem municípios com políticas de tarifa zero, os pontos representam os municípios: 
+  2.Localização dos municípios
+  
+  O mapa abaixo nos mostra a localização das cidades, os pontos representam os municípios: 
 
-```{r include=FALSE}
+```{r Download GEObr, include=FALSE}
 # Download dos Estados e Municípios: 
 
 muni_geobr_1 <- read_municipality(code_muni="all", year=2018)
@@ -198,106 +237,114 @@ geo_ufs <- read_state(code_state = 'all', year = 2018)
 
 ```
 
-```{r}
+```{r Mapa dos municipios, fig.align = 'center', out.width = "60%"}
 # Estados: 
 
-munic_isencao_tarifa <- munic_isencao_tarifa %>% 
-  mutate(Tarifa_zero = "sim")
-
-munic_isencao_tarifa_uf <- munic_isencao_tarifa %>% 
-  select(`COD UF`,Tarifa_zero) %>% 
+  munic_isencao_tarifa_uf <- banco_completo_6 %>% 
+  select(`COD UF`,tarifa_zero) %>% 
   distinct() %>% 
   rename(code_state=`COD UF`)
 
-geo_ufs_2 <- geo_ufs  %>% 
+  geo_ufs_2 <- geo_ufs  %>% 
   left_join(munic_isencao_tarifa_uf, by = c("code_state")) %>% 
   replace(is.na(.), "não")
 
 # municipios: 
 
-munic_isencao_tarifa_muni <- munic_isencao_tarifa %>% 
+  munic_isencao_tarifa_muni <- banco_completo_6  %>% 
   rename(code_muni= CodMun) %>% 
-  select(code_muni,Tarifa_zero) %>% 
+  select(code_muni,tarifa_zero) %>% 
   distinct()
 
-muni_geobr_3 <- muni_geobr_1 %>% 
+  muni_geobr_3 <- muni_geobr_1 %>% 
   left_join(munic_isencao_tarifa_muni, by = c("code_muni")) %>% 
   replace(is.na(.), "não") %>% 
   st_centroid() %>% 
-  filter(Tarifa_zero == "sim")
+  filter(tarifa_zero == "sim")
 
 # gráfico de mapa colocando os municípios dentro de seus respectivos estados: 
 
-geo_ufs_2 %>% 
+  geo_ufs_2 %>% 
   st_as_sf(coords=c("geom")) %>%
   ggplot() +
   geom_sf(aes(geometry = geom,
-             fill = as.character(Tarifa_zero)))  +
+             fill = as.character(tarifa_zero)))  +
   geom_sf(data=muni_geobr_3) +
   theme_minimal()+
   scale_fill_manual(values = wes_palette("Moonrise2")) +
-  labs(fill = "Tem política de Tarifa zero?")
+  labs(fill = "Tem política de FFTP?")
 
 ```
 
+  Essa tabela nos mostra a região dos municípios, através dela podemos visualizar que mais da metade (cerca de 66%) deles estão localizados no sudeste do país. Sabemos que o nordeste é a região do Brasil com mais municípios, seguido da região sudeste, no entanto, o nordeste só tem 2 municípios com FFTP. 
 
+```{r Região dos Municípios,fig.align = 'center', out.width = "50%"}
 
-```{r}
-munic_isencao_tarifa %>% 
+  banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>% 
   group_by(REGIAO) %>%
   tally() %>% 
   arrange(-n) %>% 
-  ggplot(aes(x ="", y=n, fill=REGIAO)) + 
-  geom_bar(width = 1, stat = "identity") +
-  coord_polar("y", start = 0, direction = -1) +
-  geom_text(aes(x ="", y=n, label = n),
-              position = position_stack(vjust = 0.7)) +
-  xlab("") +
-  ylab("") +
-  ggtitle("Regiões dos municípios") +
-  theme(
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    panel.grid=element_blank(),
-    axis.ticks = element_blank(),
-    panel.background = element_blank(),
-    axis.text.x=element_blank(),
-    legend.title = element_blank())
+  kable(digits=1, col.names=c("Região", "Qtd. de Municípios")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
+
 ```
+    
+   Dos 27 estados brasileiros, sete possuem algum município que implementou FFTP, Minas Gerais é o estado com mais municípios no Brasil mas o segundo com mais cidades com FFT, e São Paulo é o segundo com mais municípios e no entando o estado com mais cidades que adotaram a política. 
 
-
-
-```{r}
-  munic_isencao_tarifa %>% group_by(UF) %>%
-  tally() %>% 
-  ggplot(aes(x= n, y = reorder(UF, n))) + 
-  geom_col(width = 0.9, fill = "lightblue",colour="black") +
-  xlab("") +
-  ylab("") +
-  ggtitle("Qtd de Municípios por Estado") +
-  geom_label(aes(x = n, y=UF, label = n), 
-             position = position_stack(vjust = 0.8)) +
-  theme(
-    axis.title.x = element_blank(),
-    axis.ticks = element_blank(),
-    axis.text.x=element_blank(),
-    legend.title = element_blank())+
-  theme_classic()
+```{r UF dos municípios, fig.align = 'center', out.width = "50%"}
+  banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>% 
+  group_by(UF) %>%
+  tally() %>%
+  arrange (-n) %>% 
+  kable(digits=1, col.names=c("UF", "Qtd. de Municípios")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
 ```
+  3.Dados populacionais
+
+  A média populacional desses municípios é 31 mil habitantes, sendo que há quantidades bem discrepantes, como um máximo de pouco mais de 160 mil, como é o caso de Maricá no Rio de Janeiro, e um mínimo de 7 mil habitantes em Pedro Osório no Rio Grande do Sul (IBGE, 2020).Abaixo podemos visualizar a quantidade de municípios por classe populacional,cerca de 70% dos municípios possuem entre 10 e 50 mil habitante ao passo que não há nenhum município com mais de 500 mil habitantes que tenha adotado a política de FFTP.  
 
 
+```{r Classe Populacional dos Municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
-```{r}
+# colocar esse dado em % 
+# colocar in line code nos numeros apresentados acima 
 
-munic_isencao_tarifa %>% group_by(ano_implemen_resumido) %>% 
+ munic_interese_classe_pop <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  group_by(`CLASSE POP`) %>% 
+  tally()
+
+munic_geral_classe_pop <- banco_completo_6 %>% 
+  filter(tarifa_zero == "não") %>% 
+  group_by(`CLASSE POP`) %>% 
+  tally()
+  
+  munic_interese_classe_pop %>% 
+  inner_join(munic_geral_classe_pop, by = "CLASSE POP") %>% 
+  rename("Classe Pop." = `CLASSE POP`, "Munic.com FFTP" = n.x, "Munic.sem FFTP" = n.y) %>%
+  arrange(-`Munic.com FFTP`) %>% 
+  kable(digits=1, col.names=c("Classe Populacional", "Munic.com FFTP", "Munic.sem FFTP")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria") 
+  
+
+```
+  4.Ano de Implementação da Política de FFTP
+   
+   Quase 70% dos municípios que adotaram FFTP o fizeram depois de 2010, seguindo uma tendência mundial já observada por Klebowski (2019), no entanto, como mostrado na tabela inicial deste relatório, há três casos de municípios que adotaram a política ainda nos anos 1990, como Monte Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté (MG)em 1997. 
+
+```{r Ano de Implementacao, fig.align = 'center', out.width = "45%"}
+
+banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>% 
+  group_by(ano_implemen_resumido) %>% 
   tally() %>% 
   ggplot(aes(x=ano_implemen_resumido, y =n)) + 
-  geom_col(width = 0.9, fill = "lightgreen",colour="black") +
+  geom_col(width = 0.8, fill = "skyblue4",colour="black") +
   xlab("") +
   ylab("") +
   ggtitle("Ano de implementação") +
-  scale_discrete_manual(aes(x =ano_implemen_resumido, y=n, 
-  breaks = c("0", "3", "6", "9"))) +
   geom_label(aes(x =ano_implemen_resumido, y=n, label = n), 
              position = position_stack(vjust = 0.8)) +
   theme(
@@ -305,7 +352,7 @@ munic_isencao_tarifa %>% group_by(ano_implemen_resumido) %>%
     axis.ticks = element_blank(),
     axis.text.x=element_blank(),
     legend.title = element_blank())+
-  theme_classic()
+  theme_minimal()
 
 ```
 
@@ -313,262 +360,334 @@ munic_isencao_tarifa %>% group_by(ano_implemen_resumido) %>%
 
 ```{r}
 
-classe_pop_munic_interesse <- munic_isencao_tarifa %>%
-  group_by(`CLASSE POP`) %>% 
-  tally() 
+media_urbanizacao_fftp <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(taxa_urbanizacao)) %>% round(digits = 0) %>% 
+  pull()
 
-classe_pop_munic_geral <- munic_pop %>%
-  group_by(`CLASSE POP`) %>% 
-  tally() 
- 
-  munic_pop$`CLASSE POP` <-  gsub("1 - Até 5000","Até 5.000", munic_pop$`CLASSE POP`) 
-  munic_pop$`CLASSE POP` <-  gsub("2 - 5001 até 10000","5.000 Até 10.000", munic_pop$`CLASSE POP`) 
-  munic_pop$`CLASSE POP` <-  gsub("3 - 10001 até 20000","10.000 Até 20.000", munic_pop$`CLASSE POP`) 
-  munic_pop$`CLASSE POP` <-  gsub("4 - 20001 até 50000","20.000 Até 50.000", munic_pop$`CLASSE POP`) 
-  munic_pop$`CLASSE POP` <-  gsub("5 - 50001 até 100000","50.000 Até 100.000",  munic_pop$`CLASSE POP`) 
-  munic_pop$`CLASSE POP` <-  gsub("6 - 100001 até 500000","100.000 Até 500.000", munic_pop$`CLASSE POP`)  
-  
-  
+media_urbanizacao_geral <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(taxa_urbanizacao, na.rm = TRUE)) %>% round(digits = 0) %>% 
+  pull()
+
+min_urbanizacao_fftp <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(min(taxa_urbanizacao)) %>% round(digits = 0) %>% 
+  pull()
 
 ```
 
+  4. Taxa de Urbanização
+  
+  Há uma diferença entre as médias da taxa de urbanização dos municípios que adotaram FFTP e os que não adotaram.A taxa média do primeiro grupo é `r media_urbanizacao_fftp`% enquanto do segundo é `r media_urbanizacao_geral`%. No o primeiro grupo, os municípios de interesse desta pesquisa,dois municípios aparecem com valores que se aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de urbanização e Pitanga (PR) com 63%.Os outros municípios apresentam urbanização maior que 70%.O gráfico de boxplot ilustra bem as médias da taxa de urbanização enquanto o grafico de densidade, logo abaixo, ilustra a distribuição das taxas de urbanização em todos os municípios estudados.  
+   
 
-```{r eval=FALSE, include=FALSE}
-classe_pop_munic_interesse %>% 
-  inner_join(classe_pop_munic_geral, by = "CLASSE POP") %>% 
-  kable(digits=1, col.names=c("Classe Populacional", "Qtd de Munic.de Interesse","Qtd de Munic. no Brasil")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+```{r Taxa de urbanização dos municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
+
+banco_completo_6 %>% 
+  mutate(tarifa_zero=case_when(tarifa_zero=="sim" ~"Tem Política de FFTP",
+                              tarifa_zero=="não" ~"Não Tem Política de FFTP",TRUE~(tarifa_zero))) %>%
+  ggplot() +
+  geom_boxplot(aes(x=tarifa_zero, y=taxa_urbanizacao),fill = "skyblue4", alpha=0.9)+
+  ggtitle("Taxa de Urbanização") + 
+  theme_minimal()+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
+```
+
+
+```{r Gráfico Taxa de Urbanização, echo=FALSE, fig.align = 'center', out.width = "50%"}
+
+# Gráfico taxa de urbanização 
+
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= taxa_urbanizacao, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
+
+```
+
+  5.Plano de Mobilidade Urbana
+  
+  Um dispositivo importante da Lei de Diretrizes da Política Nacional de Mobilidade Urbana (Lei n.12.587/2012) é a obrigatoriedade do desenvolvimento de planos diretores de mobilidade urbana a todos os municípios com mais de 20 mil habitantes de acordo com os padrões estabelecidos pela lei, sofrendo pena de não recebimento dos repasses destinados ao setor no caso de não apresentação do plano em até três anos a partir da vigência da lei, além da exigência de atualização e revisão periódica do plano. Segundo levantamento do Ministério das Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei de Mobilidade, devendo assim desenvolver o plano.Dos municípios com FFTP apenas 15 têm a obrigação de desenvolver plano diretor,destes 
+
+```{r Plano de Mobilidade Urbana}
+
+# plano_mob <-  banco_completo_6 %>% 
+#  filter(`CLASSE POP`!= "10.000 Até 20.000" & 
+#         `CLASSE POP`!= "5.000 Até 10.000" & `CLASSE POP`!= "Até 5.000")
+
+
+plano_mob_2 <- banco_completo_6  %>% 
+  filter(tarifa_zero != "sim") %>% 
+  filter(`CLASSE POP`!= "10.000 Até 20.000" & `CLASSE POP` != "5.000 Até 10.000") %>%
+  group_by(`Possui Plano de Mobilidade Urbana`) %>% 
+  tally() %>% 
+  mutate(`Possui Plano de Mobilidade Urbana`=case_when(`Possui Plano de Mobilidade Urbana`=="SIM" ~"Sim",
+                              TRUE~(`Possui Plano de Mobilidade Urbana`))) %>% 
+  filter(`Possui Plano de Mobilidade Urbana` != "Nao foi enviado oficio" & `Possui Plano de Mobilidade Urbana` != "Nao respondeu") %>% 
+  mutate(pct_munic_geral = n/sum(n)) %>%
+  mutate(percentual = paste0(round(pct_munic_geral * 100, 1),"%")) %>% 
+  select(-2, -3)
+
+plano_mob_3 <- banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>% 
+  group_by(`Possui Plano de Mobilidade Urbana`) %>% 
+  tally() %>% 
+  filter(`Possui Plano de Mobilidade Urbana` != "Nao foi enviado oficio" & `Possui Plano de Mobilidade Urbana` != "Nao respondeu") %>% 
+  mutate(pct_munic_tarifa_zero = n/sum(n)) %>% 
+  mutate(percentual = paste0(round(pct_munic_tarifa_zero * 100, 0),"%")) %>% 
+  select(-2, -3)
+  
+  plano_mob_2 %>% 
+  full_join(plano_mob_3, by="Possui Plano de Mobilidade Urbana") %>% 
+  kable(digits=1, col.names=c("Tem Plano de Mob. Urbana?", "Munic. sem FFTP", "Munic. com FFTP")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
+
+  
 
 
 ```
 
+   Esses são os Municípios com a Política de Tarifa Zero que possuem plano de mobilidade urbana como estabelecido pela Lei Federal nº 12.587/2012, segundo levantamento da Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB),foi atualizado pela última vez em fevereiro de 2019. 
 
+```{r Plano de Mobilidade Tabela}
 
-Esses são os Municípios que possuem plano de mobilidade urbana como estabelecido pela Lei Federal nº 12.587/2012, segundo levantamento da 
-Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB), foi atualizado pela última vez em fevereiro de 2019
-
-```{r echo=FALSE}
-tab_plano_mob <- munic_isencao_tarifa %>% 
+tab_plano_mob <- banco_completo_6  %>% 
+  filter(tarifa_zero == "sim") %>%  
   filter(`Possui Plano de Mobilidade Urbana`== "Sim") %>% 
-  select(UF, Munic, `CLASSE POP`, `Ano de elaboração`,`Aprovado em lei ou ato normativo`, `Instrumento Legal`, `Nº da Lei`)
+  select(UF, Munic, `CLASSE POP`, `Ano de elaboração`)
 
 tab_plano_mob %>% 
-  kable(digits=2, col.names=c("UF", "Municipio", "Classe Populacional", "Ano de elaboração", "Aprovado em lei ou ato normativo", "Instrumento Legal","Nº da Lei")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  kable(digits=2, col.names=c("UF", "Municipio", "Classe Populacional", "Ano de elaboração")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
 
-# DT::datatable(tab_plano_mob,rownames = FALSE)
 
 ```
 
-ìndice de Gini dos municípios referente a 2010 - O Índice de Gini mede o grau de concentração de renda em determinado grupo e varia de 0 a 1, sendo 0 uma situação de completa igualdade, e 1 uma situação de completa desigualdade.
+  6. Índice de Gini
+   
+  
+```{r Indice de Gini media geral}
 
-
-
-```{r}
-media_indice_gini_geral <- munic_isencao_tarifa %>% 
-  summarize(mean(Indice_Gini)) %>% 
+media_indice_gini_tf <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(indice_gini_2010)) %>% round(digits = 2) %>% 
   pull()
+
+media_indice_gini_geral <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(indice_gini_2010, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
+
 ```
 
-A média geral do índice de Gini nos municípios estudados é de `r media_indice_gini_geral `
+ ìndice de Gini dos municípios referente a 2010 - O Índice de Gini mede o grau de concentração de renda em determinado grupo e varia de 0 a 1, sendo 0 uma situação de completa igualdade, e 1 uma situação de completa desigualdade.A média geral do índice de Gini nos municípios estudados é de `r media_indice_gini_tf`, enquanto dos municípios sem FFTP é `r media_indice_gini_geral`. Há apenas uma pequena diferença nas médias. No entanto, no gráfico de densidade abaixo é possível observar há algumas diferenças na distribuição dos valores, a curva referente às cidades com FFTP está mais à esquerda enquanto a dos outros municípios está mais à esquerda. 
 
-Por Região: 
 
-```{r}
-munic_isencao_tarifa %>% 
-  group_by(REGIAO) %>% 
- summarize(across(c(Indice_Gini), 
-                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
-  kable(digits=2, col.names=c("Região", "Media", "Mediana", "Desvio Padrão")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+```{r Gráfico GINI, echo=FALSE, fig.align = 'center', out.width = "50%"}
+
+# Gráfico GINI
+
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= indice_gini_2010, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
+
 ```
+  6. PIB per capta dos municípios 
 
-Por Estado: 
+```{r PIB média geral}
 
-```{r}
-munic_isencao_tarifa %>% 
-  group_by(UF) %>% 
- summarize(across(c(Indice_Gini), 
-                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
-  kable(digits=2, col.names=c("Região", "Media", "Mediana", "Desvio Padrão")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
+media_pib_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(Pib_Municipal_2018)) %>% round(digits = 0) %>% 
+  pull()
 
-Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros: 
+media_pib_2 <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(Pib_Municipal_2018, na.rm = TRUE)) %>% round(digits = 0) %>% 
+  pull()
 
-```{r}
-munic_pib_filtrado_geral <- munic_pib_filtrado %>% 
-  summarize(across(c(Pib_Municipal_2018), 
-                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
-   mutate(Municipios = "Municipios em Geral")
-
-munic_pib_filtrado_interesse <- munic_isencao_tarifa %>% 
-  summarize(across(c(Pib_Municipal_2018), 
-                       list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
-   mutate(Municipios = "Municipios de Interesse")
   
-munic_pib_filtrado_geral %>% 
-  full_join(munic_pib_filtrado_interesse) %>% 
-  select(Municipios,Pib_Municipal_2018_media, Pib_Municipal_2018_mediana, Pib_Municipal_2018_desvio_padrão) %>% 
-  kable(digits=0, col.names=c("Municipios", "Media", "Mediana", "Desvio Padrão")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-
 ```
 
-Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros, por região:
+ O PIB per capta dos municípios estudados é de `r media_pib_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_pib_2`. Olhando para essa média geral podemos dizer que o PIB per capta dos municípios que adotaram a FFTP é quase dobro do que a média dos municípios brasileiros que não adotaram,no entanto,quando observamos esse valor por região e unidade federativa do país,verificamos que esses valores podem variar bastante.Nas regiões nordeste e sudeste, de fato, o PIB per capta, na comparação,é bem maior, no entanto os municípios do centro oeste e sul apresentam médias menores.  
 
-```{r}
-munic_pib_filtrado_geral_regiao <- munic_pib_filtrado %>%  
-  group_by(Regiao) %>% 
-  summarize(Media_munic_geral = mean(Pib_Municipal_2018)) %>% 
-  rename(REGIAO = Regiao) %>% 
-  mutate(REGIAO = gsub("Centro-oeste" ,"Centro Oeste",REGIAO))
-               
-munic_pib_filtrado_interesse_regiao <- munic_isencao_tarifa %>%
+
+```{r PIB por região}
+
+pib_regiao_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
   group_by(REGIAO) %>% 
-  summarize(Media_munic_interesse = mean(Pib_Municipal_2018))
+  summarize(media_pib_fftp = mean(Pib_Municipal_2018))
 
-
-munic_pib_filtrado_geral_regiao %>% 
-  left_join(munic_pib_filtrado_interesse_regiao, by = "REGIAO") %>% 
+pib_regiao_2 <- banco_completo_6 %>% 
   filter(REGIAO != "Norte") %>% 
-  kable(digits=0, col.names=c("Região", "Media Munic. em Geral", "Media Munic. de Interesse")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+  group_by(REGIAO) %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(media_pib_geral = mean(Pib_Municipal_2018, na.rm = TRUE))
+
+pib_regiao_1 %>% full_join(pib_regiao_2, by= "REGIAO") %>% 
+  kable(digits=0, col.names=c("Região", "Munic.com FFTP", "Munic.sem FFTP")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
+  
+
+# formata_milhar <- function(x) return(gsub(",","\\.",formatC(x,format = "f",big.mark = ",",digits=0)))
+
+# pib_regiao_1 %>% formata_milhar("mean(Pib_Municipal_2018)")
+
+```
+ Os estados que apresentam média de PIB per capta dos municípios que adotaram a FFTP maior que os municípios que não adotaram são quatro: Ceará, Minas Gerais, Rio de Janeiro e São Paulo. Os outros dois, Goiás e rio Grande do Sul, são os municípios que apresentam valores menores, o que acompanha o dado por região do pais.
+
+
+```{r PIB por Estado}
+
+pib_uf_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  group_by(UF) %>% 
+  summarize(mean(Pib_Municipal_2018))
+
+pib_uf_2 <- banco_completo_6 %>% 
+  filter(UF == "CE" | UF == "GO" | UF == "MG" | UF == "PR" | UF == "RJ" | UF == "RS" | UF == "SP") %>% 
+  group_by(UF) %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(Pib_Municipal_2018, na.rm = TRUE))
+
+pib_uf_1 %>% full_join(pib_uf_2, by= "UF") %>% 
+  kable(digits=0, col.names=c("UF", "Munic.com FFTP", "Munic.sem FFTP")) %>%
+  kable_classic_2(full_width = F, html_font = "Cambria")
 
 ```
 
-Comparação entre o PIB per capta das cidades de interesse e todos os municípios brasileiros, por Estado:
+  7.Índice de Desenvolvimento Humano IDHM
 
-```{r}
-munic_pib_filtrado_geral_regiao <- munic_pib_filtrado %>%  
-  group_by(UF) %>% 
-  summarize(Media_munic_geral = mean(Pib_Municipal_2018)) 
+```{r IDHM média geral, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
-               
-munic_pib_filtrado_interesse_regiao <- munic_isencao_tarifa %>% 
-  group_by(UF) %>% 
-  summarize(Media_munic_interesse = mean(Pib_Municipal_2018))
-
-
-munic_pib_filtrado_interesse_regiao %>% 
-  left_join(munic_pib_filtrado_geral_regiao, by = "UF") %>% 
-  kable(digits=0, col.names=c("Região", "Media Munic. em Geral", "Media Munic. de Interesse")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-
-```
-
-Comparação entre o IDHM médio dos municípios brasileiros e o IDHM médio dos municípios que adotaram a política de tarifa zero: 
- 
-
-```{r}
 # IDH dos municípios - média, mediana e desvio padrão 
 
-munic_interesse <- munic_isencao_tarifa %>% 
-  summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
-                         list(media=mean))) %>% 
-  mutate(Municipios = "Municípios de Interesse")
+media_idh_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(IDHM)) %>% round(digits = 2) %>% 
+  pull()
 
-munic_em_geral <- munic_idh %>% summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
-                         list(media=mean))) %>% 
-  mutate(Municipios = "Municípios em Geral")
+media_idh_2 <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(IDHM, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
 
-munic_interesse %>% full_join(munic_em_geral) %>% 
-  select(Municipios,`IDHM_media`, `IDHM Renda_media`, `IDHM Educação_media`, `IDHM Longevidade_media`) %>% 
-  kable(digits=2, col.names=c("Municipios", "IDHM", "IDHM Renda", "IDHM Educação", "IDHM Longevidade")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
+# Gráfico IDHM
+
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= IDHM, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
   
 ```
 
+O IDHM médio dos municípios estudados é de `r media_idh_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_2`, exatamente o mesmo.
 
-Média dos valores do IDHM dos municípios estudados por região: 
+```{r IDHM Renda dos municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
-```{r}
-# IDH dos municípios - média, mediana e desvio padrão 
+# IDH  Renda dos municípios (média) 
 
-munic_isencao_tarifa %>% group_by(REGIAO) %>% 
-  summarize(across(c(IDHM,`IDHM Renda`,`IDHM Educação`,`IDHM Longevidade`), 
-                         list(media=mean))) %>% 
-  kable(digits=2, col.names=c("Região", "IDHM", "IDHM Renda", "IDHM Educação", "IDHM Longevidade")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
+media_idh_renda_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(`IDHM Renda`)) %>% round(digits = 2) %>% 
+  pull()
 
-Comparação entre o IDHM médio dos municípios brasileiros e o IDHM médio dos municípios que adotaram a política de tarifa zero, por estado: 
+media_idh_renda_2 <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(`IDHM Renda`, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
 
-```{r echo=FALSE}
-# IDH dos municípios 
+# IDH Renda 
 
-munic_interesse_uf <- munic_isencao_tarifa %>% 
-  group_by(UF) %>% 
-  summarize(media_IDH_uf_interesse = mean(IDHM)) 
-                        
-munic_em_geral_uf <- 
-  munic_idh %>% 
-  group_by(UF) %>% 
-  summarize(media_IDH_uf_geral = mean(IDHM)) 
-
-  munic_em_geral_uf$UF <-  gsub("CE","Ceará", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("GO","Goiás", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("MG","Minas Gerais", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("PR","Paraná", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("RJ","Rio de Janeiro", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("RS","Rio Grande do Sul", munic_em_geral_uf$UF) 
-  munic_em_geral_uf$UF <-  gsub("SP","São Paulo", munic_em_geral_uf$UF) 
-
-munic_interesse_uf %>% 
-  inner_join(munic_em_geral_uf, by = "UF") %>% 
-  kable(digits=2, col.names=c("UF", "Municípios de Interesse", "Todos os Municípios")) %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-
-munic_inner_join <- munic_interesse_uf %>% 
-  inner_join(munic_em_geral_uf, by = "UF")
- 
-```
- 
- Media, Mediana e Desvio Padrão da Posição no Ranking do IDHM: 
- 
-```{r}
-
-munic_isencao_tarifa %>% group_by(REGIAO) %>% 
-  summarize(across(c(`Posição IDHM`), 
-                         list(media=mean,mediana=median, desvio_padrão=sd))) %>% 
-  kable(digits=0, col.names=c("Região", "Media", "Mediana","Desvio Padrão")) %>%
-  kable_classic(full_width = F, html_font = "Cambria") 
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= `IDHM Renda`, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
 
 ```
- 
- 
- 
-```{r eval=FALSE, include=FALSE}
 
-# taxa de urbanização nas cidades onde tem a tarifa zero
+A média do IDHM Renda dos municípios estudados é de `r media_idh_renda_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_renda_2`, exatamente o mesmo.
 
-urban_conc <- read_urban_concentrations(year = 2015)
+```{r IDH Educação, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
-urban_conc_1 <- urban_conc %>% 
-  left_join(munic_isencao_tarifa_muni, by = c("code_muni")) %>% 
-  replace(is.na(.), "não") %>% 
-  filter(Tarifa_zero == "sim")
+# IDH Educação 
 
-urban_conc_1 %>% as_tibble()
+media_idh_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(`IDHM Educação`)) %>% round(digits = 2) %>% 
+  pull()
 
-taxa_urbanizacao <- urban_conc_1 %>% 
-  group_by(code_muni) %>% 
-  mutate(taxa_urbanizacao = 100* pop_urban_2010/pop_total_2010)
+media_idh_2 <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(`IDHM Educação`, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
 
+##
 
-geo_ufs_3 <- geo_ufs_2 %>% filter(abbrev_state == "CE" | 
-                                  abbrev_state == "SP" | 
-                                  abbrev_state == "MG" |
-                                  abbrev_state == "RJ")
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= `IDHM Educação`, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
 
-urban_area <- read_urban_area(year = 2015, simplified = TRUE, showProgress = TRUE)
-
-urban_area <- urban_area %>% as_tibble()
-
-sheet_write(munic_isencao_tarifa, ss = "https://docs.google.com/spreadsheets/d/1c5SD24EZvQPEmzCXVB398kOcXrgbpMcdSU4VHof1XXs/edit?usp=sharing", sheet = 3) 
 ```
 
+```{r IDHM Educação, echo=FALSE, fig.align = 'center', out.width = "50%" }
 
+# IDH Educação 
 
+media_idh_longevidade_1 <- banco_completo_6 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(`IDHM Longevidade`)) %>% round(digits = 2) %>% 
+  pull()
 
+media_idh_logenvidade_2 <- banco_completo_6 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(`IDHM Longevidade`, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
 
+##
+
+banco_completo_6  %>% 
+  ggplot() +
+  geom_density(aes(x= `IDHM Longevidade`, fill=tarifa_zero), alpha=0.5) +
+  theme_minimal()+
+  labs(fill = "Tem Política de FFTP?")+
+  theme(
+    axis.title.x = element_blank(),
+    panel.background = element_blank(),
+    axis.title.y = element_blank())
+
+```
+
+A média do IDHM Renda dos municípios estudados é de `r media_idh_longevidade_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_logenvidade_2`
