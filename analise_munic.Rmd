@@ -4,6 +4,7 @@ title: Projeto Final - Análise dos municípios que adotaram política de isenç
 author: "Thais Fernandes"
 date: "Julho de 2021"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
     theme: paper
@@ -14,6 +15,9 @@ output:
 ```
 
 ```{r Pacotes}
+tinytex::install_tinytex()
+
+library("tinytex")
 library("tidyverse")
 library("kableExtra")
 library("knitr")
@@ -74,6 +78,8 @@ banco_completo <- munic_pop %>%
   mutate(`CLASSE POP` = gsub("100001 até 500000","100.000 Até 500.000",`CLASSE POP`)) %>%
   mutate(`CLASSE POP` = gsub("Maior que 500000","Maior que 500.000", `CLASSE POP`)) %>% 
   rename(Munic = `NOME MUNIC`)
+
+
 
 ```
 
@@ -358,7 +364,7 @@ banco_completo_6  %>%
 
 
 
-```{r}
+```{r Médias da Taxa de Urbanização}
 
 media_urbanizacao_fftp <- banco_completo_6 %>% 
   filter(tarifa_zero == "sim") %>% 
@@ -379,7 +385,7 @@ min_urbanizacao_fftp <- banco_completo_6 %>%
 
   4. Taxa de Urbanização
   
-  Há uma diferença entre as médias da taxa de urbanização dos municípios que adotaram FFTP e os que não adotaram.A taxa média do primeiro grupo é `r media_urbanizacao_fftp`% enquanto do segundo é `r media_urbanizacao_geral`%. No o primeiro grupo, os municípios de interesse desta pesquisa,dois municípios aparecem com valores que se aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de urbanização e Pitanga (PR) com 63%.Os outros municípios apresentam urbanização maior que 70%.O gráfico de boxplot ilustra bem as médias da taxa de urbanização enquanto o grafico de densidade, logo abaixo, ilustra a distribuição das taxas de urbanização em todos os municípios estudados.  
+  Há uma diferença entre as médias da taxa de urbanização dos municípios que adotaram FFTP e os que não adotaram.A taxa média do primeiro grupo é `r media_urbanizacao_fftp`% enquanto do segundo é `r media_urbanizacao_geral`%. No o primeiro grupo, os municípios de interesse desta pesquisa,dois municípios aparecem com valores que se aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de urbanização e Pitanga (PR) com 63%.Os outros municípios apresentam urbanização maior que 70%.  
    
 
 ```{r Taxa de urbanização dos municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
@@ -397,6 +403,7 @@ banco_completo_6 %>%
     axis.title.y = element_blank())
 ```
 
+O gráfico de boxplot ilustra bem as médias da taxa de urbanização enquanto o grafico de densidade, logo abaixo, ilustra melhor a distribuição das taxas de urbanização em todos os municípios estudados.Há uma variação muito grande nos municípios que não adotaram a política, até porque estão em muita maior quntidade. 
 
 ```{r Gráfico Taxa de Urbanização, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
@@ -416,29 +423,31 @@ banco_completo_6  %>%
 
   5.Plano de Mobilidade Urbana
   
-  Um dispositivo importante da Lei de Diretrizes da Política Nacional de Mobilidade Urbana (Lei n.12.587/2012) é a obrigatoriedade do desenvolvimento de planos diretores de mobilidade urbana a todos os municípios com mais de 20 mil habitantes de acordo com os padrões estabelecidos pela lei, sofrendo pena de não recebimento dos repasses destinados ao setor no caso de não apresentação do plano em até três anos a partir da vigência da lei, além da exigência de atualização e revisão periódica do plano. Segundo levantamento do Ministério das Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei de Mobilidade, devendo assim desenvolver o plano.Dos municípios com FFTP apenas 15 têm a obrigação de desenvolver plano diretor,destes 
+  Um dispositivo importante da Lei de Diretrizes da Política Nacional de Mobilidade Urbana (Lei n.12.587/2012) é a obrigatoriedade do desenvolvimento de planos diretores de mobilidade urbana a todos os municípios com mais de 20 mil habitantes de acordo com os padrões estabelecidos pela lei, sofrendo pena de não recebimento dos repasses destinados ao setor no caso de não apresentação do plano em até três anos a partir da vigência da lei, além da exigência de atualização e revisão periódica do plano. Segundo levantamento do Ministério das Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei de Mobilidade, devendo assim desenvolver o plano.Dos municípios com FFTP apenas 12 têm a obrigação de desenvolver plano diretor. Nessa análise consideramos apenas os municípios que no levantamento da Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB)responderam "sim" ou "não" para a pergunta sobre a execução do plano de mobilidade urbana,não tendo sido considerado as cidades que não responderam. 
+  
+````{r Plano de Mobilidade Urbana}
+ 
+   banco_completo_6$`Possui Plano de Mobilidade Urbana` <- trimws( banco_completo_6$`Possui Plano de Mobilidade Urbana`)
+   banco_completo_6$`CLASSE POP` <- trimws( banco_completo_6$`CLASSE POP`) # não estava conseguindo filtrar essa variável e descobri que o problema eram os espaços 
 
-```{r Plano de Mobilidade Urbana}
-
-# plano_mob <-  banco_completo_6 %>% 
-#  filter(`CLASSE POP`!= "10.000 Até 20.000" & 
-#         `CLASSE POP`!= "5.000 Até 10.000" & `CLASSE POP`!= "Até 5.000")
-
-
-plano_mob_2 <- banco_completo_6  %>% 
-  filter(tarifa_zero != "sim") %>% 
-  filter(`CLASSE POP`!= "10.000 Até 20.000" & `CLASSE POP` != "5.000 Até 10.000") %>%
-  group_by(`Possui Plano de Mobilidade Urbana`) %>% 
-  tally() %>% 
-  mutate(`Possui Plano de Mobilidade Urbana`=case_when(`Possui Plano de Mobilidade Urbana`=="SIM" ~"Sim",
+plano_mob_2 <- banco_completo_6  %>%
+   mutate(`Possui Plano de Mobilidade Urbana`=case_when(`Possui Plano de Mobilidade Urbana`=="SIM" ~"Sim",
                               TRUE~(`Possui Plano de Mobilidade Urbana`))) %>% 
-  filter(`Possui Plano de Mobilidade Urbana` != "Nao foi enviado oficio" & `Possui Plano de Mobilidade Urbana` != "Nao respondeu") %>% 
+  filter(tarifa_zero != "sim" & `CLASSE POP`!= "10.000 Até 20.000" 
+                              & `CLASSE POP` != "5.000 Até 10.000" 
+                              & `CLASSE POP` != "Até 5.000") %>%
+  group_by(`Possui Plano de Mobilidade Urbana`) %>%
+  tally() %>% 
+  filter(`Possui Plano de Mobilidade Urbana` != "Nao foi enviado oficio" & 
+         `Possui Plano de Mobilidade Urbana` != "Nao respondeu") %>% 
   mutate(pct_munic_geral = n/sum(n)) %>%
   mutate(percentual = paste0(round(pct_munic_geral * 100, 1),"%")) %>% 
   select(-2, -3)
 
 plano_mob_3 <- banco_completo_6  %>% 
-  filter(tarifa_zero == "sim") %>% 
+    filter(tarifa_zero == "sim" & `CLASSE POP`!= "10.000 Até 20.000" 
+                                & `CLASSE POP` != "5.000 Até 10.000" 
+                                & `CLASSE POP` != "Até 5.000") %>%  
   group_by(`Possui Plano de Mobilidade Urbana`) %>% 
   tally() %>% 
   filter(`Possui Plano de Mobilidade Urbana` != "Nao foi enviado oficio" & `Possui Plano de Mobilidade Urbana` != "Nao respondeu") %>% 
@@ -456,7 +465,7 @@ plano_mob_3 <- banco_completo_6  %>%
 
 ```
 
-   Esses são os Municípios com a Política de Tarifa Zero que possuem plano de mobilidade urbana como estabelecido pela Lei Federal nº 12.587/2012, segundo levantamento da Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB),foi atualizado pela última vez em fevereiro de 2019. 
+   Esses são os seis Municípios com a Política de Tarifa Zero que possuem plano de mobilidade urbana como estabelecido pela Lei Federal nº 12.587/2012, segundo levantamento da Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB),foi atualizado pela última vez em fevereiro de 2019. 
 
 ```{r Plano de Mobilidade Tabela}
 
@@ -468,6 +477,10 @@ tab_plano_mob <- banco_completo_6  %>%
 tab_plano_mob %>% 
   kable(digits=2, col.names=c("UF", "Municipio", "Classe Populacional", "Ano de elaboração")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
+
+##
+
+  
 
 
 ```
@@ -507,7 +520,7 @@ banco_completo_6  %>%
     axis.title.y = element_blank())
 
 ```
-  6. PIB per capta dos municípios 
+  7. PIB per capta dos municípios 
 
 ```{r PIB média geral}
 
@@ -587,7 +600,12 @@ media_idh_2 <- banco_completo_6 %>%
   filter(tarifa_zero != "sim") %>% 
   summarize(mean(IDHM, na.rm = TRUE)) %>% round(digits = 2) %>% 
   pull()
+```
 
+"O Índice de Desenvolvimento Humano Municipal (IDHM) é uma medida composta de indicadores de três dimensões do desenvolvimento humano: longevidade, educação e renda. O índice varia de 0 a 1. Quanto mais próximo de 1, maior o desenvolvimento humano."(PNUD,2021)
+ O IDHM médio dos municípios estudados é de `r media_idh_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_2`. Olhando para a distribuição dos valores para os dois grupos de municípios podemos perceber que os municípios que adotaram a política possuem valores de IDHM ligeiramente maiores. 
+
+```{r, fig.align = 'center', out.width = "50%"}
 # Gráfico IDHM
 
 banco_completo_6  %>% 
@@ -599,10 +617,9 @@ banco_completo_6  %>%
     axis.title.x = element_blank(),
     panel.background = element_blank(),
     axis.title.y = element_blank())
-  
 ```
 
-O IDHM médio dos municípios estudados é de `r media_idh_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_2`, exatamente o mesmo.
+
 
 ```{r IDHM Renda dos municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
@@ -618,6 +635,13 @@ media_idh_renda_2 <- banco_completo_6 %>%
   summarize(mean(`IDHM Renda`, na.rm = TRUE)) %>% round(digits = 2) %>% 
   pull()
 
+
+
+```
+
+A média do IDHM Renda dos municípios estudados é de `r media_idh_renda_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_renda_2`, valores bem próximos. No entando quando olhamos para a distribuição dos valores no gráfico de densidade, percebemos que os municípios que adotaram FFTP apresentam valores mais próximos de 1, estando inclinados mais à esquerda do gráfico. 
+
+```{r, fig.align = 'center', out.width = "50%"}
 # IDH Renda 
 
 banco_completo_6  %>% 
@@ -629,10 +653,9 @@ banco_completo_6  %>%
     axis.title.x = element_blank(),
     panel.background = element_blank(),
     axis.title.y = element_blank())
-
 ```
 
-A média do IDHM Renda dos municípios estudados é de `r media_idh_renda_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_renda_2`, exatamente o mesmo.
+
 
 ```{r IDH Educação, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
@@ -650,6 +673,11 @@ media_idh_2 <- banco_completo_6 %>%
 
 ##
 
+```
+A média do IDHM Educação dos municípios com FFTP é de `r media_idh_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_2`. Assim como no gráfico de densidade do IDHM geral, os municípios com FFTP apresentam valores mais próximos de 1, à esquerda do gráfico em relação a distribuição dos valores referentes aos municípios que não adotaram a políica. 
+
+
+```{r, fig.align = 'center', out.width = "50%"}
 banco_completo_6  %>% 
   ggplot() +
   geom_density(aes(x= `IDHM Educação`, fill=tarifa_zero), alpha=0.5) +
@@ -659,12 +687,13 @@ banco_completo_6  %>%
     axis.title.x = element_blank(),
     panel.background = element_blank(),
     axis.title.y = element_blank())
-
 ```
+
+
 
 ```{r IDHM Educação, echo=FALSE, fig.align = 'center', out.width = "50%" }
 
-# IDH Educação 
+# IDH Longevidade
 
 media_idh_longevidade_1 <- banco_completo_6 %>% 
   filter(tarifa_zero == "sim") %>% 
@@ -676,6 +705,14 @@ media_idh_logenvidade_2 <- banco_completo_6 %>%
   summarize(mean(`IDHM Longevidade`, na.rm = TRUE)) %>% round(digits = 2) %>% 
   pull()
 
+
+```
+
+
+A média do IDHM Renda dos municípios estudados é de `r media_idh_longevidade_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_logenvidade_2.Aqui há também uma diferença entre os municípios com o FFTP e os sem a política, o primeiro grupo apresenta valores mais próximos de 1, assim como nos outros indicadores,mas também um concentração grande de municípios em torno da média.  
+
+
+```{r, fig.align = 'center', out.width = "50%"}
 ##
 
 banco_completo_6  %>% 
@@ -690,4 +727,18 @@ banco_completo_6  %>%
 
 ```
 
-A média do IDHM Renda dos municípios estudados é de `r media_idh_longevidade_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_logenvidade_2`
+
+```{r}
+
+# Mínimo e máximo dos indicadores de IDH 
+
+
+```
+
+
+A respeito dos indicadores de IDHM: renda, educação e longevidade, podemos dizer que em termos de longevidade e educação os municípios que adotaram o FFTP tem uma diferença de 7 pontos a mais na média de valores do indicador, em relação aos municípios sem essa política. Em relação 
+a renda as médias apresentam valores praticamente semelhantes. 
+
+
+
+
