@@ -1,21 +1,52 @@
 ---
 title: Projeto Final - Análise dos municípios que adotaram política de isenção de
   tarifa no transporte público
-author: "Thais Fernandes"
+author: "Thais Fernandes Pereira"
 date: "Julho de 2021"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
     theme: paper
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE, out.width="50%"}
 (knitr::opts_chunk$set(echo=FALSE, error=FALSE, warning=FALSE, message=FALSE)) 
 ```
 
+
+```{css, Estilo}
+
+h1.title{ 
+    color: #00688B;
+    font-size: 23px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h4.author{ 
+    color: #00688B;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h4.date{ 
+    color: #00688B;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+
+p{
+  text-align: justify;
+  font-size: 11px
+}
+
+```
+
+
 ```{r Pacotes}
-tinytex::install_tinytex()
 
 library("tinytex")
 library("tidyverse")
@@ -38,25 +69,29 @@ library("googlesheets4")
 library("googledrive")
 ```
 
+
 ```{r baixando arquivos}
 
 # Arquivos 
 
-setwd("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/analise_mestrado/arquivos_da_analise")
+file1 <- "https://raw.githubusercontent.com/thais01fernandes/C-Users-Thais.Pereira-Documents-pessoal-mestrado-An-lise-Mestrado/main/munic_pop.csv"
+munic_pop <- read_delim(file1, delim = ";", 
+                         locale = locale(encoding='latin1'))
 
+file2 <- "https://raw.githubusercontent.com/thais01fernandes/C-Users-Thais.Pereira-Documents-pessoal-mestrado-An-lise-Mestrado/main/PIB%20dos%20Munic%C3%ADpios%20-%20base%20de%20dados%202010-2018.csv"
+munic_pib <- read_delim(file2, delim = ";", 
+                         locale = locale(encoding='latin1'))
 
-munic_pop <- read_excel("Base_MUNIC_2019.xlsx")
+file3 <- "https://raw.githubusercontent.com/thais01fernandes/C-Users-Thais.Pereira-Documents-pessoal-mestrado-An-lise-Mestrado/main/idh_muni.csv"
+munic_idh <- read_delim(file3, delim = ",")
 
-munic_rh <- read_excel("Base_MUNIC_2019.xlsx", "Recursos humanos")
+file5 <- "https://raw.githubusercontent.com/thais01fernandes/C-Users-Thais.Pereira-Documents-pessoal-mestrado-An-lise-Mestrado/main/PlanosdeMobilidadeUrbana.csv"
+plano_mob <- read_delim(file5, delim = ",")
 
-munic_idh <- read_excel("idh_muni.xlsx") 
+file6 <- "https://raw.githubusercontent.com/thais01fernandes/C-Users-Thais.Pereira-Documents-pessoal-mestrado-An-lise-Mestrado/main/ginibr.csv"
+munic_gini <- read_delim(file6, delim = ";", 
+                         locale = locale(encoding='latin1'))
 
-munic_pib <- read_excel("PIB dos Municípios - base de dados 2010-2018.xls")
-
-plano_mob <- read_excel("PlanosdeMobilidadeUrbana.xlsx")
-
-munic_gini <- read_delim("ginibr.csv", delim = ";", 
-                    locale = locale(encoding='latin1'))
  
 ```
 
@@ -192,6 +227,7 @@ banco_completo_4$indice_gini_1991 <- as.double(banco_completo_4$indice_gini_1991
 ```{r Organização da base Parte 7}
 # Para obter a taxa de população urbana foram utilizados os arquivos de população total do censo 2010, encontrados no site do IBGE, no link: https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html
 # Não há informação para 107 municípios 
+# os arquivos foram colocados todos em uma pasta do computador 
 
 larquivos <- list.files("C:/Users/Thais.Pereira/Documents/pessoal/mestrado/analise_mestrado/arquivos_da_analise/pop_urbana",full.names=TRUE)
 arquivos <- sapply(larquivos, read_excel,simplify = F)
@@ -214,7 +250,7 @@ arquivos <- do.call(rbind.data.frame, arquivos)
 
 ```
 
-   1.  Apresentação do objeto de estudo, recorte empírico e municípios estudados
+ **1.  Apresentação do objeto de estudo, recorte empírico e municípios estudados**
 
 O objeto de estudo da pesquisa a qual esse relatório se refere tem como recorte empírico o estudo de 27 cidades brasileiras que adotaram a isenção integral da tarifa do transporte público. Para a seleção dos casos foram utilizados dois critérios definidos por Klebowski (2019) para o estudo do que o autor conceitua como Free Fare Public Transport: i. A política foi implantada na maioria das redes de transporte da cidade; ii. Está disponível para a maioria dos seus usuários, durante a maior parte do tempo. Este autor define a política de isenção de tarifa no transporte público como uma forma particular de subsídio público adotada por governos locais em duas principais modalidades: parcial e completa. O foco principal dessa agenda de pesquisa é o estudo da política em seu formato completo, ou seja, o subsídio integral do valor da tarifa, sendo um dos objetivos centrais entender quais são os motivos que levam um governo local a adotar essa política.Também utilizaremos o termo FFTP para se referir a política, abreviação de Free Fare Public Transport, também seguindo Klebowski (2019).Esse relatório é uma análise exploratória de dados públicos a respeito dos municípios estudados. 
 Abaixo há uma tabela com o nome dos municípios, data de implementação da política e unidade federativa, essas informações foram coletadas, além de pesquisa própria, da dissertação de mestrado de Marijke Vermander (2021),"Exploring Fare-Free Public Transport in Brasil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalitie". 
@@ -230,7 +266,7 @@ Abaixo há uma tabela com o nome dos municípios, data de implementação da pol
 
 ```
 
-  2.Localização dos municípios
+  **2. Localização dos municípios**
   
   O mapa abaixo nos mostra a localização das cidades, os pontos representam os municípios: 
 
@@ -307,7 +343,7 @@ geo_ufs <- read_state(code_state = 'all', year = 2018)
   kable(digits=1, col.names=c("UF", "Qtd. de Municípios")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 ```
-  3.Dados populacionais
+  **3. Dados populacionais**
 
   A média populacional desses municípios é 31 mil habitantes, sendo que há quantidades bem discrepantes, como um máximo de pouco mais de 160 mil, como é o caso de Maricá no Rio de Janeiro, e um mínimo de 7 mil habitantes em Pedro Osório no Rio Grande do Sul (IBGE, 2020).Abaixo podemos visualizar a quantidade de municípios por classe populacional,cerca de 70% dos municípios possuem entre 10 e 50 mil habitante ao passo que não há nenhum município com mais de 500 mil habitantes que tenha adotado a política de FFTP.  
 
@@ -336,9 +372,9 @@ munic_geral_classe_pop <- banco_completo_6 %>%
   
 
 ```
-  4.Ano de Implementação da Política de FFTP
+  **4. Ano de Implementação da Política de FFTP**
    
-   Quase 70% dos municípios que adotaram FFTP o fizeram depois de 2010, seguindo uma tendência mundial já observada por Klebowski (2019), no entanto, como mostrado na tabela inicial deste relatório, há três casos de municípios que adotaram a política ainda nos anos 1990, como Monte Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté (MG)em 1997. 
+  Quase 70% dos municípios que adotaram FFTP o fizeram depois de 2010, seguindo uma tendência mundial já observada por Klebowski (2019), no entanto, como mostrado na tabela inicial deste relatório, há três casos de municípios que adotaram a política ainda nos anos 1990, como Monte Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté (MG)em 1997. 
 
 ```{r Ano de Implementacao, fig.align = 'center', out.width = "45%"}
 
@@ -383,7 +419,7 @@ min_urbanizacao_fftp <- banco_completo_6 %>%
 
 ```
 
-  4. Taxa de Urbanização
+  **5. Taxa de Urbanização**
   
   Há uma diferença entre as médias da taxa de urbanização dos municípios que adotaram FFTP e os que não adotaram.A taxa média do primeiro grupo é `r media_urbanizacao_fftp`% enquanto do segundo é `r media_urbanizacao_geral`%. No o primeiro grupo, os municípios de interesse desta pesquisa,dois municípios aparecem com valores que se aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de urbanização e Pitanga (PR) com 63%.Os outros municípios apresentam urbanização maior que 70%.  
    
@@ -413,7 +449,8 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= taxa_urbanizacao, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?",
+       title = "Taxa de Urbanização")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
@@ -421,7 +458,7 @@ banco_completo_6  %>%
 
 ```
 
-  5.Plano de Mobilidade Urbana
+  **6. Plano de Mobilidade Urbana**
   
   Um dispositivo importante da Lei de Diretrizes da Política Nacional de Mobilidade Urbana (Lei n.12.587/2012) é a obrigatoriedade do desenvolvimento de planos diretores de mobilidade urbana a todos os municípios com mais de 20 mil habitantes de acordo com os padrões estabelecidos pela lei, sofrendo pena de não recebimento dos repasses destinados ao setor no caso de não apresentação do plano em até três anos a partir da vigência da lei, além da exigência de atualização e revisão periódica do plano. Segundo levantamento do Ministério das Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei de Mobilidade, devendo assim desenvolver o plano.Dos municípios com FFTP apenas 12 têm a obrigação de desenvolver plano diretor. Nessa análise consideramos apenas os municípios que no levantamento da Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB)responderam "sim" ou "não" para a pergunta sobre a execução do plano de mobilidade urbana,não tendo sido considerado as cidades que não responderam. 
   
@@ -485,7 +522,7 @@ tab_plano_mob %>%
 
 ```
 
-  6. Índice de Gini
+  **7. Índice de Gini**
    
   
 ```{r Indice de Gini media geral}
@@ -513,14 +550,15 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= indice_gini_2010, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?",
+       title = "Índice de Gini")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
     axis.title.y = element_blank())
 
 ```
-  7. PIB per capta dos municípios 
+  **8. PIB per capta dos municípios** 
 
 ```{r PIB média geral}
 
@@ -585,7 +623,7 @@ pib_uf_1 %>% full_join(pib_uf_2, by= "UF") %>%
 
 ```
 
-  7.Índice de Desenvolvimento Humano IDHM
+  **9. Índice de Desenvolvimento Humano IDHM**
 
 ```{r IDHM média geral, echo=FALSE, fig.align = 'center', out.width = "50%"}
 
@@ -612,7 +650,8 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= IDHM, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?", 
+       title = "Índice de Desenvolvimento Humano Municipal (IDHM)")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
@@ -648,7 +687,8 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= `IDHM Renda`, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?", 
+       title = "IDHM Renda")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
@@ -682,7 +722,8 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= `IDHM Educação`, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?",
+       title ="IDHM Educação")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
@@ -709,7 +750,7 @@ media_idh_logenvidade_2 <- banco_completo_6 %>%
 ```
 
 
-A média do IDHM Renda dos municípios estudados é de `r media_idh_longevidade_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_logenvidade_2.Aqui há também uma diferença entre os municípios com o FFTP e os sem a política, o primeiro grupo apresenta valores mais próximos de 1, assim como nos outros indicadores,mas também um concentração grande de municípios em torno da média.  
+A média do IDHM Renda dos municípios estudados é de `r media_idh_longevidade_1` enquanto a média nos municípios brasileiros que não adotaram a política é `r media_idh_logenvidade_2`.Aqui há também uma diferença entre os municípios com o FFTP e os sem a política, o primeiro grupo apresenta valores mais próximos de 1, assim como nos outros indicadores,mas também um concentração grande de municípios em torno da média.  
 
 
 ```{r, fig.align = 'center', out.width = "50%"}
@@ -719,7 +760,8 @@ banco_completo_6  %>%
   ggplot() +
   geom_density(aes(x= `IDHM Longevidade`, fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?")+
+  labs(fill = "Tem Política de FFTP?",
+       title = "IDHM Longevidade")+
   theme(
     axis.title.x = element_blank(),
     panel.background = element_blank(),
