@@ -1,0 +1,83 @@
+/*------------- Apply Font to Whole Document---------------- */
+  
+  
+  @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500&display=swap');
+
+body {
+  font-family: 'Lora', serif;
+  font-size: 18px;
+  text-align: justify;
+}
+
+#TOC::before {
+  content: "";
+  display: block;
+  height: 90px;
+  margin: 20px 20px 40px 20px;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+
+
+/*------------Table of Contents (TOC)----------- */
+
+/*----------TOC Sticky Fix---------*/
+
+
+.main-container > .row:first-child > div:first-child.col-xs-12.col-sm-4.col-md-3{
+  position: sticky;
+  top: 10px;
+}
+
+#TOC{ 
+  position: initial;
+  width: 100%;
+  font-size: 16px;
+}
+
+/*----------TOC Sticky Adjustment---------*/
+
+.tocify ul, .tocify li { /* Increases spacing between TOC headers*/
+    line-height: 20px !important;
+}
+
+.tocify ul {
+  border-right: solid 1px #eee; /* Thin right border on TOC list */
+}
+
+
+
+/* Active TOC links*/
+
+.list-group-item.active, 
+.list-group-item.active:hover{
+  color: #050404;
+  background-color: #FFBF00;
+  border-color: #ccc;
+  font-size: 16px;
+  text-align: left;
+}
+
+/* Hovered TOC links*/
+
+.list-group-item:hover { 
+  color: #050404;
+  background-color: #35B2C9;
+  border: none;
+  font-size: 16px;
+  text-align: left;
+}
+
+
+/*----------------- links ---------------------*/
+
+a { 
+  color: #4e89bf;
+}
+
+
+a:hover {
+    color: #396892; /* darker color when hovering */
+}
