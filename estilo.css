@@ -3,20 +3,39 @@
   
   @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500&display=swap');
 
-body {
-  font-family: 'Lora', serif;
-  font-size: 18px;
-  text-align: justify;
+h1.title{ 
+    color: #00688B;
+    font-family: 'Lora', serif;
+    font-size: 26px;
+    text-align: center;
+    font-weight: bold;
 }
 
-#TOC::before {
-  content: "";
-  display: block;
-  height: 90px;
-  margin: 20px 20px 40px 20px;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
+h4.author{ 
+    color: #00688B;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h4.date{ 
+    color: #00688B;
+    font-size: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+
+h2{ 
+    font-size: 19px;
+    color: #2a272a;
+    font-weight: bold;
+}
+
+p{
+  text-align: justify;
+  font-size: 14px;
+  font-family: 'Lora', serif;
+  color: #5b6370;
 }
 
 
@@ -34,7 +53,7 @@ body {
 #TOC{ 
   position: initial;
   width: 100%;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /*----------TOC Sticky Adjustment---------*/
@@ -54,9 +73,10 @@ body {
 .list-group-item.active, 
 .list-group-item.active:hover{
   color: #050404;
-  background-color: #FFBF00;
+  background-color: #9aaebb;
+  font-family: 'Lora', serif;
   border-color: #ccc;
-  font-size: 16px;
+  font-size: 14px;
   text-align: left;
 }
 
@@ -64,9 +84,10 @@ body {
 
 .list-group-item:hover { 
   color: #050404;
-  background-color: #35B2C9;
+  background-color: #9aaebb;
+  font-family: 'Lora', serif;
   border: none;
-  font-size: 16px;
+  font-size: 14px;
   text-align: left;
 }
 
