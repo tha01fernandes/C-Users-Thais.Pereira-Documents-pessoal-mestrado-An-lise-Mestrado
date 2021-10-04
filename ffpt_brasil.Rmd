@@ -2,7 +2,7 @@
 title: Análise Exploratória dos municípios que adotaram política de isenção de tarifa
   no transporte público
 author: "Thais Fernandes Pereira"
-date: "Julho de 2021"
+date: "2021"
 output:
   html_document:
     theme: flatly  
@@ -363,8 +363,7 @@ banco_completo_5[21:30] <- lapply(banco_completo_5[21:30], as.numeric)
 ```
 
 
-
-## 1. Abstract
+## Abstract
 
 O objeto de estudo da pesquisa a qual esse relatório se refere tem como
 recorte empírico o estudo de 30 cidades brasileiras que adotaram a
@@ -386,14 +385,10 @@ exploratória de dados públicos a respeito dos municípios estudados.
 
 
 
-## 2. Base de Dados com Informações coletadas a respeito dos municípios
+## 1. Base de Dados com Informações coletadas a respeito dos municípios
 
-Abaixo há uma tabela com o nome dos municípios, data de implementação da
-política e unidade federativa, essas informações foram coletadas, além
-de pesquisa própria, da dissertação de mestrado de Marijke Vermander
-(2021),"Exploring Fare-Free Public Transport in Brasil: Rationales and
-characteristics of Tarifa Zero policies in small Brazilian
-municipalitie".
+Abaixo há uma tabela com informações a respeito dos municípios que adotaram a política de Tarifa Zero. O ano da implementação foi coletado da dissertação de mestrado de Marijke Vermander (2021),"Exploring Fare-Free Public Transport in Brasil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities". O PIB per capta são dados do IBGE 2018, a taxa de urbanização utiliza dados da estimativa da população do IBGE de 2019, a densidade demográfica foi produzida com base em dados dessa mesma estimativa, no entando usando a área total do IBGE de 2020. Os dados de índice de vulnerabilidade social (IVS) são do IPEA e foram produdizos com base em dados do censo de 2010.  Todos os outros dados são provenientes do Índice de Desenvolvimento Humano dos municípios, coletados a partir do Atlas do Desenvolvimento Humano e são dados de 2010. Foi utilizado o pacote AbjData (https://abjur.github.io/abjData/) que contém esses dados sitematizados para todos os municípios brasileiros.   
+
 
 ```{r Tabela inicial, fig.align = 'center', out.width = "60%"}
 
@@ -435,7 +430,8 @@ municipalitie".
       taxa_atividade_18_anos_ou_mais = colDef("Taxa de Atividade 18 anos ou mais" , format = colFormat(percent = TRUE, digits = 1), minWidth = 200),
       taxa_urbanizacao = colDef("Taxa de Urbanização" , format = colFormat(percent = TRUE, digits = 1), minWidth = 120),
       ocup_desl = colDef("% de vulneráveis à pobreza que gastam mais de uma hora até o trabalho" , format = colFormat(percent = TRUE, digits = 1), minWidth = 250),
-      taxa_pop_vulneravel_retorna_diariamente_trabalho = colDef("% da população ocupada vulnerável à pobreza que retorna diariamente do trabalho" , format = colFormat(percent = TRUE, digits = 1), minWidth = 250), 
+      taxa_pop_vulneravel_retorna_diariamente_trabalho = colDef("% da população ocupada vulnerável à pobreza que retorna diariamente do trabalho" , 
+                                                                format = colFormat(percent = TRUE, digits = 1), minWidth = 250), 
       indice_gini = colDef("Índice de Gini" ,  minWidth = 100),
       indice_theil = colDef("Índice de Theil" ,  minWidth = 100),
       idhm_class = colDef("IDHM" ,  minWidth = 100),
@@ -450,12 +446,9 @@ municipalitie".
       densidade_demografica = colDef("Densidade Demográfica" , format = colFormat(suffix = " hab/km²", separators = TRUE, digits = 3), minWidth = 150),
       pageSizeOptions = c(5,10,15,20,25,30), bordered = TRUE, striped = FALSE, highlight = TRUE))
      
-  
-  
-
 ```
 
-## 3. Localização dos municípios
+## 2. Localização dos municípios
 
 O mapa abaixo nos mostra a localização das cidades, os pontos
 representam os municípios:
@@ -495,6 +488,7 @@ geo_ufs <- read_state(code_state = 'all', year = 2018)
 
 ```
 
+
 ```{r mapa teste, fig.align = 'center', out.width = "80%"}
 
 geo_ufs_2 %>% 
@@ -508,13 +502,13 @@ geo_ufs_2 %>%
           alpha = 0.8,
           show.legend = F) +
   theme_void() +
-   geom_text_repel(data=muni_geobr_3, aes(label = Municipio, geometry = geom),
+  labs(caption = "") +
+  geom_text_repel(data=muni_geobr_3, aes(label = Municipio, geometry = geom),
                   stat = "sf_coordinates",
                   force = 1000,
                   color = "skyblue4",
-                  max.overlaps = Inf)
-
-   
+                  max.overlaps = Inf) +
+  theme(plot.caption = element_text(size = 9, vjust = 0.9, family = "serif", color = "#5b6370"))
 
 
 ```
@@ -565,12 +559,11 @@ geo_ufs_2 %>%
 ```
 
 
-
 Essa tabela nos mostra a região dos municípios, através dela podemos
-visualizar que mais da metade (cerca de 65%) deles estão localizados no
+visualizar que mais da metade deles estão localizados no
 sudeste do país. Sabemos que o nordeste é a região do Brasil com mais
 municípios, seguido da região sudeste, no entanto, o nordeste só tem 2
-municípios com FFTP.
+municípios com FFPT.
 
 ```{r Região dos Municípios,fig.align = 'center', out.width = "50%"}
 
@@ -578,17 +571,22 @@ municípios com FFTP.
 
   banco_completo_5  %>% 
   filter(tarifa_zero == "sim") %>% 
+  mutate(REGIAO = trimws(REGIAO)) %>% 
+  mutate(REGIAO = factor(REGIAO, levels = c("Sudeste", "Sul", "Centro-Oeste", 
+        "Nordeste", ordered = T))) %>% 
   group_by(REGIAO) %>%
   tally() %>% 
-  arrange(-n) %>% 
-  kable(digits=1, col.names=c("Região", "Qtd. de Municípios")) %>%
+  mutate(pct = n/sum(n)) %>% 
+  mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
+  select(- n) %>% 
+  kable(digits=1, col.names=c("Região", "Proporção de Municípios")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
 ```
 
 Dos 27 estados brasileiros, sete possuem algum município que implementou
-FFTP, Minas Gerais é o estado com mais municípios no Brasil mas o
-segundo com mais cidades com FFTP, e São Paulo é o segundo com mais
+FFPT. Minas Gerais é o estado com mais municípios no Brasil mas o
+segundo com mais cidades com FFPT, e São Paulo é o segundo com mais
 municípios e no entando o estado com mais cidades que adotaram a
 política.
 
@@ -598,58 +596,166 @@ política.
 
   banco_completo_5  %>% 
   filter(tarifa_zero == "sim") %>% 
+  mutate(UF = trimws(UF)) %>% 
+  mutate(UF = factor(UF, levels = c("SP", "MG", "PR", 
+        "CE", "GO", "RJ", "RS", ordered = T))) %>% 
   group_by(UF) %>%
   tally() %>%
-  arrange (-n) %>% 
-  kable(digits=1, col.names=c("UF", "Qtd. de Municípios")) %>%
+  mutate(pct = n/sum(n)) %>% 
+  mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
+  select(- n) %>% 
+  kable(digits=1, col.names=c("UF", "Proporção de Municípios")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 ```
 
 ## 3. Classe Populacional 
 
-A média populacional desses municípios é 31 mil habitantes, sendo que há
-quantidades bem discrepantes, com um máximo de pouco mais de 160 mil,
-como é o caso de Maricá no Rio de Janeiro, e um mínimo de 7 mil
-habitantes em Pedro Osório no Rio Grande do Sul (IBGE, 2020). Abaixo
-podemos visualizar a quantidade de municípios por classe
-populacional,cerca de 70% dos municípios possuem entre 10 e 50 mil
-habitante ao passo que não há nenhum município com mais de 500 mil
-habitantes que tenha adotado a política de FFTP.
+Na tabela abaixo podemos observar a proporção dos municípios em cada classe populacional, tanto dos municípios com Tarifa Zero, quanto dos que não adotaram a política. É possivel observar que que a maior parte dos municípios, 37% deles, tem população entre 20 e 50 mil habitantes enquanto 30% tem população entre 10 e 20 mil habitantes, ou seja, a maior parte dos municípios, 67% tem população entre 10 e 50 mil habitantes o que pode ser considerado de "pequeno porte", entre os municípios que não adotaram a politica, 44% deles percentem a essa classe populacional. É interessante notar que não há municípios com população até 5 mil habitantes e nem maior que 500 mil habitantes que tenha adotado a Tarifa Zero. 
 
-```{r Classe Populacional dos Municípios, echo=FALSE, fig.align = 'center', out.width = "50%"}
+```{r Classe Populacional dos Municípios, fig.align = 'center', out.width = "65%", dpi=300}
 
 # Tabela com a classe populacional dos municípios 
 
- munic_interese_classe_pop <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  group_by(classe_pop) %>% 
-  tally()
-
-munic_geral_classe_pop <- banco_completo_5 %>% 
-  filter(tarifa_zero == "não") %>% 
-  group_by(classe_pop) %>% 
-  tally()
-  
+   munic_interese_classe_pop <- banco_completo_5 %>% 
+   filter(tarifa_zero == "sim") %>% 
+   group_by(classe_pop) %>% 
+   tally() %>% 
+   mutate(pct = n/sum(n)) %>% 
+   select(- n)
+   
+ 
+   munic_geral_classe_pop <- banco_completo_5 %>% 
+   filter(tarifa_zero == "não") %>% 
+   group_by(classe_pop) %>% 
+   tally() %>% 
+   mutate(pct = n/sum(n)) %>% 
+   select(- n)
+   
   munic_interese_classe_pop %>% 
-  inner_join(munic_geral_classe_pop, by = "classe_pop") %>% 
-  rename("Classe Pop." = classe_pop, "Munic.com FFTP" = n.x, "Munic.sem FFTP" = n.y) %>%
-  arrange(-`Munic.com FFTP`) %>% 
-  kable(digits=1, col.names=c("Classe Populacional", 
-                              "Munic.com FFTP", 
-                              "Munic.sem FFTP")) %>%
-  kable_classic_2(full_width = F, html_font = "Cambria") 
+  full_join(munic_geral_classe_pop, by = "classe_pop") %>%
+  mutate(classe_pop = trimws(classe_pop)) %>% 
+  mutate(pct.x = paste0(round(pct.x * 100, 0),"%")) %>% 
+  mutate(pct.y = paste0(round(pct.y * 100, 0),"%")) %>% 
+  mutate(pct.x = case_when(classe_pop == "Maior que 500.000" ~ "0%", 
+                           classe_pop == "Até 5.000" ~ "0%", TRUE ~ pct.x)) %>%
+  mutate(classe_pop = factor(classe_pop, levels = c("Até 5.000", 
+                                                    "5.000 Até 10.000", 
+                                                    "10.000 Até 20.000", 
+                                                    "20.000 Até 50.000",
+                                                    "50.000 Até 100.000", 
+                                                    "100.000 Até 500.000", 
+                                                    "Maior que 500.000", ordered = TRUE))) %>%
+   rename("Classe Populacional" = classe_pop, "Municipios com FFPT" = pct.x, "Municipios sem FFPT" = pct.y) %>%
+   kable(digits=1, col.names=c("Classe Populacional", 
+                               "Municipios com FFPT", 
+                               "Municipios sem FFPT")) %>%
+   kable_classic_2(full_width = F, html_font = "Cambria") 
+   
   
 
 ```
 
-## 4. Ano de Implementação da Política de FFTP
 
-Quase 70% dos municípios que adotaram FFTP o fizeram depois de 2010,
-seguindo uma tendência mundial, já observada por Klebowski (2019), no
+
+```{r Médias Tamanho da Pop}
+
+# População médias 
+
+format_milhar <- function(values, nsmall = 0) {
+  values %>%
+    as.numeric() %>%
+    format(nsmall = nsmall,  big.mark = ".") %>%
+    str_trim() 
+}
+
+media_pop_ffpt <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(pop_estimada_2019)) %>% 
+  round(digits = 0) %>% 
+  format_milhar()
+
+
+media_pop_geral <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(pop_estimada_2019, na.rm = TRUE)) %>% 
+  round(digits = 0) %>% 
+  format_milhar()
+ 
+
+max_pop_ffpt <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(max(pop_estimada_2019)) %>% round(digits = 0) %>% 
+  format_milhar()
+
+min_pop_ffpt <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(min(pop_estimada_2019)) %>% round(digits = 0) %>% 
+  format_milhar()
+  
+max_pop_geral <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(max(pop_estimada_2019)) %>% round(digits = 0) %>% 
+  format_milhar()
+
+```
+
+No gráfico abaixo podemos ver a população estimada de 2019 do IBGE para todas as cidades que adotaram a Tarifa Zero, juntamente com a média nacional (linha vertical). A média populacional dos municípios com a Tarifa Zero é `r media_pop_ffpt` mil habitantes, sendo que há quantidades bem discrepantes, com um máximo de `r max_pop_ffpt`
+como é o caso de Caucaia no Ceará, e um mínimo de `r min_pop_ffpt` habitantes em Pedro Osório no Rio Grande do Sul (IBGE, 2019). Nos municípios que não adotaram a política a média populacional é `r media_pop_geral`, mas também com valores muito discrepantes, chegando a um máximo de `r max_pop_geral` mil habitantes, como é o caso da cidade de São Paulo. No gráfico abaixo é possível comparar os municípios com a Tarifa Zero entre si: 
+   
+
+```{r fig.align = 'center', out.width = "80%", dpi=300}
+
+
+
+format_milhar <- function(values, nsmall = 0) {
+  values %>%
+    as.numeric() %>%
+    format(nsmall = nsmall, decimal.mark = ",", big.mark = ".") %>%
+    str_trim() %>%
+    str_c("", .)
+}
+
+
+# gráfico
+
+options(scipen=999)
+banco_completo_5 %>% 
+  mutate(media_nacional = mean(pop_estimada_2019)) %>% 
+  filter(tarifa_zero == "sim") %>% 
+  mutate_if(is.character, str_to_title) %>%
+  mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
+                        UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
+                        UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
+  ggplot() + 
+  geom_col(aes(x = reorder(nome_muni, pop_estimada_2019), y = pop_estimada_2019, fill = UF),
+           width = 1,colour="white", alpha = 0.6) +
+  geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
+  xlab("") +
+  ylab("") +
+  labs(title = "") + 
+  coord_flip()+
+  scale_y_continuous(labels = format_milhar) +
+  scale_fill_brewer(name = "UF", palette = "Set2")+
+  theme_minimal() + 
+    theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
+    text = element_text(family = "serif"),
+    axis.text.x=element_text(size = 8.5, family = "serif"),
+    axis.text.y=element_text(size = 10, family = "serif"),
+    legend.title = element_blank())+
+    coord_flip()
+
+
+```
+
+## 4. Ano de Implementação da Política de FFPT
+
+A partir do gráfico abaixo podemos verificar que 70% dos municípios que adotaram FFPT o fizeram depois de 2010,
+seguindo uma tendência mundial já observada por Klebowski (2019), no
 entanto, como mostrado na tabela inicial deste relatório, há três casos
 de municípios que adotaram a política ainda nos anos 1990, como Monte
 Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté
-(MG)em 1997.
+(MG)em 1997. Assim como a quatro municípios que adotaram em caracter permanente a política em 2021, são eles: 
+Caucaia no Ceará, Caeté e Cláudio em Minhas Gerais e Formosa em Goiania. 
 
 ```{r Ano de Implementacao, fig.align = 'center', out.width = "65%", dpi=300}
 
@@ -659,13 +765,14 @@ Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté
   filter(tarifa_zero == "sim") %>% 
   group_by(ano_implemen_resumido) %>% 
   tally() %>% 
-  ggplot(aes(x=ano_implemen_resumido, y =n)) + 
-  geom_col(width = 0.8, fill = "#b9a6b3", colour="white", alpha = 0.9) +
+  mutate(pct = n/sum(n)) %>% 
+  ggplot(aes(x=ano_implemen_resumido, y = pct)) + 
+  geom_col(width = 0.9, fill = "#b9a6b3", colour="white", alpha = 0.9) +
   xlab("") +
   ylab("") +
   ggtitle("") +
-  scale_y_continuous(breaks=seq(0,12,3))+
-  geom_label(aes(x =ano_implemen_resumido, y=n, label = n), 
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1))  + 
+  geom_label(aes(x =ano_implemen_resumido, y=pct, label = scales::percent(pct, accuracy = 1)), 
            position = position_stack(vjust = 0.8), fill = "beige") +
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 16, face = "bold", hjust = 0.5, colour = "black"),
@@ -715,13 +822,12 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                       UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
-  geom_col(aes(x = reorder(nome_muni, taxa_urbanizacao), y = taxa_urbanizacao, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, taxa_urbanizacao), y = taxa_urbanizacao, fill = UF), width = 1,colour="white", alpha = 0.6) +
    geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
   ggtitle("") +
   scale_y_continuous(labels = scales::percent)+
-  # scale_fill_manual(name = "", values = c("#00688b", "#0066ad", "#954182", "#1acabf", "#364955", "#00a791",  "#815074" ), labels = c("CE", "GO", "MG", "PR", "RJ", "RS", "SP"))+
   theme_minimal() + 
     scale_fill_brewer(name = "UF", palette = "Set2")+
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
@@ -736,18 +842,18 @@ banco_completo_5 %>%
 
 
 Há uma diferença entre as médias da taxa de urbanização dos municípios
-que adotaram FFTP e os que não adotaram.A taxa média do primeiro grupo é
+que adotaram FFPT e os que não adotaram. A taxa média do primeiro grupo é
 `r media_urbanizacao_fftp`% enquanto do segundo é
-`r media_urbanizacao_geral`%. No o primeiro grupo, os municípios de
-interesse desta pesquisa,dois municípios aparecem com valores que se
+`r media_urbanizacao_geral`%. No primeiro grupo, dois municípios aparecem com valores que se
 aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de
-urbanização e Pitanga (PR) com 63%.Os outros municípios apresentam
+urbanização e Pitanga (PR) com 63%. Os outros municípios apresentam
 urbanização maior que 70%.
 
 O grafico de densidade, logo abaixo, ilustra melhor a
 distribuição das taxas de urbanização em todos os municípios
 estudados.Há uma variação muito grande nos municípios que não adotaram a
-política, até porque estão em muita maior quantidade.
+política, até porque estão em muita maior quantidade, mas o interessante é observar que os municípios com Tarifa Zero 
+estão mais a direita do gráfico, ou seja, trata-se de cidades bem urbanizadas em sua maioria. 
 
 ```{r Taxa de Urbanização densidade, echo=FALSE, fig.align = 'center', out.width = "70%", dpi=300}
 
@@ -776,7 +882,10 @@ banco_completo_5  %>%
 
 ## 6. Densidade Demográfica
 
-```{r densidade demográfica, fig.align = 'center', out.width = "70%", dpi=300}
+A densidade demográfica brasileira varia bastante, as capitais e grande metrópolis possuem uma densidade demográfica muito diferente das pequenas cidades mais ao interior do país. Os municípios que adotaram política de Tarifa Zero são em geral cidades de "pequeno porte", e por isso com baixíssima densidade demográfica, no gráfico abaixo podemos observar que apenas Vargem Grande Paulista em São Paulo chega a 1 habitante por km². A média nacional é 0,5 habitante por km², mas como dissemos antes, esse valor pode variar muito e por isso é bem pouco exato. Talvez ele seja muito pequeno pois no Brasil as cidades são em sua maioria de pequeno a médio porte mas no entanto maior parte da população está concentrada nas capitais e grandes metrópolis. 
+
+
+```{r densidade demográfica, fig.align = 'center', out.width = "80%", dpi=300}
 
 # formatação  
 
@@ -799,7 +908,7 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
-  geom_col(aes(x = reorder(nome_muni, densidade_demografica), y = densidade_demografica, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, densidade_demografica), y = densidade_demografica, fill = UF), width = 1,colour="white", alpha = 0.7) +
    geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
@@ -816,7 +925,9 @@ banco_completo_5 %>%
 
 ```
 
-```{r fig.align = 'center', out.width = "65%", dpi=300}
+No gráfico de densidade abaixo estamos mostrando apenas os municípios brasileiros com densidade demográfica menor que 0.4 habitante por km², ou seja, 5.189 municípios, para que o gráfico não ficasse com valores muito discrepantes e por conta disso, de difícil visualização. Nele podemos observar a concentração dos municípios com Tarifa Zero mais à direita do gráfico, o que indica que há um padrão de menor densidade demográfica nesse grupo em relação a todos os outros. 
+
+```{r fig.align = 'center', out.width = "70%", dpi=300}
 
 banco_completo_5  %>% filter(densidade_demografica < 0.4) %>% 
   ggplot() +
@@ -833,7 +944,6 @@ banco_completo_5  %>% filter(densidade_demografica < 0.4) %>%
     axis.text.x=element_text(size = 11, colour = "black"),
     axis.text.y=element_text(size = 11, colour = "black"), 
     panel.spacing = unit(0.10, "lines"),
- #  strip.text.x = element_text(size = 6),
     legend.position = "bottom")
 
 ```
@@ -851,11 +961,12 @@ revisão periódica do plano. Segundo levantamento do Ministério das
 Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se
 enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei
 de Mobilidade, devendo assim desenvolver o plano. Dos municípios com
-FFTP apenas 12 têm a obrigação de desenvolver plano diretor. Nessa
+FFPT apenas 18 têm a obrigação de desenvolver plano diretor. Nessa
 análise consideramos apenas os municípios que no levantamento da
-Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB)responderam
+Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB) responderam
 "sim" ou "não" para a pergunta sobre a execução do plano de mobilidade
 urbana,não tendo sido considerado as cidades que não responderam.
+
 
 ```{r Plano de Mobilidade Urbana}
 
@@ -892,9 +1003,10 @@ plano_mob_3 <- banco_completo_5  %>%
   
   plano_mob_2 %>% 
   full_join(plano_mob_3, by="plano_mob") %>% 
+  filter(plano_mob == "Sim") %>% 
   kable(digits=1, col.names=c("Tem Plano de Mob. Urbana?", 
-                              "Munic. sem FFTP", 
-                              "Munic. com FFTP")) %>%
+                              "Municípios sem FFPT", 
+                              "Municípios com FFPT")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
   
@@ -931,6 +1043,7 @@ tab_plano_mob %>%
 
 ## 8. Índice de Gini e de Theil
 
+
 ```{r Indice de Gini e Theil media geral}
 
 # Indíce de Gini médias
@@ -966,6 +1079,21 @@ media_indice_theil_geral <- banco_completo_5 %>%
 ```
 
 
+Gini e L de Theil - L são dois índices de desigualdade bastante utilizados, ambos medem o
+grau de concentração de renda em determinado grupo e variam de 0 a 1,
+sendo 0 uma situação de completa igualdade, e 1 uma situação de completa
+desigualdade, além disso ambos estão utilizando dados provenientes do censo 2010. 
+No gráfico abaixo podemos observar a distribuição dos valores entre os municípios que adotaram a Tarifa Zero. 
+A média geral do índice de Gini nos municípios estudados é
+de `r media_indice_gini_tf`, enquanto dos municípios sem Tarifa Zero é
+`r media_indice_gini_geral`. Há apenas uma pequena diferença nas médias.E o mesmo ocorre para o 
+índice de Theil - L, em que a média no primeiro grupo é de `r `media_indice_theil_tf`, enquanto no segundo grupo é
+de `r media_indice_theil_geral `, mas do mesmo modo os municípios com Tarifa Zero apresentam valores que indicam menor desigualdade
+social. Abaixo podemos observar o gráfico da distribuição dos valores dos dois índices para todos
+os municípios com Tarifa Zero: 
+
+
+
 ```{r grafico ivs infra urbana todos, fig.align = 'center', out.width = "80%", dpi=300}
 
 
@@ -982,7 +1110,7 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                       UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() +
-  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   facet_wrap(~name) +
   theme(legend.position = "bottom") +
@@ -1004,19 +1132,12 @@ banco_completo_5 %>%
 
 ```
 
-
-ìndice de Gini dos municípios referente a 2010 - O Índice de Gini mede o
-grau de concentração de renda em determinado grupo e varia de 0 a 1,
-sendo 0 uma situação de completa igualdade, e 1 uma situação de completa
-desigualdade. A média geral do índice de Gini nos municípios estudados é
-de `r media_indice_gini_tf`, enquanto dos municípios sem FFTP é
-`r media_indice_gini_geral`. Há apenas uma pequena diferença nas médias.
-No entanto, no gráfico de densidade abaixo é possível observar que há
-algumas diferenças na distribuição dos valores, a curva referente às
-cidades com FFTP está mais à esquerda enquanto a dos outros municípios
+No gráfico de densidade abaixo é possível observar que há
+algumas diferenças na distribuição dos valores mas elas são bem pequenas, a curva referente às
+cidades com FFPT está mais à esquerda enquanto a dos outros municípios
 está mais à direita.
 
-```{r Gráfico GINI e Theil, echo=FALSE, fig.align = 'center', out.width = "80%", dpi=300}
+```{r Gráfico GINI e Theil, echo=FALSE, fig.align = 'center', out.width = "75%", dpi=300}
 
 # Gráfico GINI e Theil
 
@@ -1024,7 +1145,7 @@ banco_completo_5 %>%
   pivot_longer(cols = c("indice_gini", "indice_theil")) %>%
   mutate(name = case_when(
     name == "indice_gini" ~ "Índice de Gini",
-    name == "indice_theil" ~ "Índice de Theil")) %>% 
+    name == "indice_theil" ~ "Índice de Theil - L")) %>% 
   ggplot() +
   geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
   facet_wrap(~name) +
@@ -1034,10 +1155,10 @@ banco_completo_5 %>%
        title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tem Política de FFPT?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
         strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif"),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold",  size = 12),
     text = element_text(family = "serif", size = 13),
     axis.text.x=element_text(size = 10, colour = "black"),
     axis.text.y=element_text(size = 11, colour = "black"), 
@@ -1067,7 +1188,15 @@ media_pct_pobres_geral <- banco_completo_5 %>%
 
 ## 9. Porcentagem de Pobres
 
-O gráfico abaixo mostra a porcentagem de pobres em cada município estudado e linha vertical representa a média nacional 
+O gráfico abaixo mostra a porcentagem de pobres em cada município estudado e a linha vertical representa a média nacional. 
+Esse indicador considera pobre o indivíduo que recebe menos que 436
+reais como renda mensal, que é a linha de pobreza recomendada
+internacionalmente para uso em países de renda média-alta com é o caso
+do Brasil, e foo produzido a partir de dados do censo de 2010. Há uma diferença considerável entre as médias encontradas no
+grupo de cidades que adotaram FFTP e os que não adotaram. Enquanto o
+primeiro grupo tem uma média de porcentagem de pobres de
+`r media_pct_pobres_fftp`%, o segundo grupo tem
+`r media_pct_pobres_geral`%, o que corresponde a uma diferença de 14%.
 
 ```{r Porcentagem de pobres, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1080,7 +1209,7 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                       UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
-  geom_col(aes(x = reorder(nome_muni, pct_pobres), y = pct_pobres, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, pct_pobres), y = pct_pobres, fill = UF), width = 1,colour="white", alpha = 0.6) +
    geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
@@ -1098,17 +1227,9 @@ banco_completo_5 %>%
 ```
 
 
-Esse indicador considera pobre o indivíduo que recebe menos que 436
-reais como renda mensal, que é a linha de pobreza recomendada
-internacionalmente para uso em países de renda média-alta com é o caso
-do Brasil. Há uma diferença considerável entre as médias encontradas no
-grupo de cidades que adotaram FFTP e os que não adotaram. Enquanto o
-primeiro grupo tem uma média de porcentagem de pobres de
-`r media_pct_pobres_fftp`%, o segundo grupo tem
-`r media_pct_pobres_geral`%, o que corresponde a uma diferença de 14%.
 Observando o gráfico de densidade abaixo, também é possível verificar o
 quanto esse percentual varia nos municípios brasileiros e também o
-quanto a curva das cidades que adotaram FFTP está mais à esquerda do
+quanto a curva das cidades que adotaram FFPT está mais à esquerda do
 gráfico.
 
 ```{r Porcentagem de Pobres densidade, echo=FALSE, fig.align='center', out.width= "70%", dpi=300}
@@ -1156,10 +1277,12 @@ max_deslocamento_fftp <- banco_completo_5 %>%
 
 ```
 
-## 11. Deslocamento e Pobreza
+## 10. Deslocamento e Pobreza
 
 
-```{r media deslocamento e pobreza}
+```{r medias deslocamento e pobreza}
+
+# % de vulneráveis à pobreza que gastam mais de uma hora até o trabalho
 
 media_desloc_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
@@ -1178,8 +1301,51 @@ max_urbanizacao_fftp <- banco_completo_5 %>%
   summarize(max(ocup_desl)) %>% round(digits = 2) %>% 
   pull()
 
+max_urbanizacao_geral <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(max(ocup_desl)) %>% round(digits = 2) %>% 
+  pull()
+
+
+# % da população ocupada vulnerável à pobreza que retorna diariamente do trabalho
+
+
+media_desloc2_fftp <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+media_desloc2_geral <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho, na.rm = TRUE)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+max_urbanizacao2_fftp <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(max(taxa_pop_vulneravel_retorna_diariamente_trabalho)) %>% round(digits = 2) %>% 
+  pull()
+
+max_urbanizacao2_geral <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(max(taxa_pop_vulneravel_retorna_diariamente_trabalho)) %>% round(digits = 2) %>% 
+  pull()
+
 ```
 
+Essa métrica de deslocamento e pobreza no Brasil é um dado poduzido a partir do censo de 2010. 
+A média da porcentagem da população ocupada vulnerável à pobreza que retorna diariamente do trabalho nos 
+municípios com Tarifa Zero é `r media_desloc2_fftp` enquanto nos outros municípios é de `r media_desloc2_geral`, ou seja, um pouco mais alto
+mas ainda uma diferença muito pequena. Esses valores chegam a máximo de `r max_urbanizacao2_fftp` nos municípios com Tarifa Zero, enquanto 
+`r max_urbanizacao2_geral` nos outros municiípios. 
+A média da porcentagem de pessoas vulneráveis à pobreza que gastam mais de uma hora até o trabalho, por sua vez, nos municípios
+que adotaram o FFPT é menos de 1%, ou mais precisamente
+`r media_desloc_fftp`%, enquanto a média nos outros municípios é ligeiramente maior,
+`r media_desloc_geral`%. Ou seja, a diferença é realmente bem pequena.
+No primeiro essa porcetagem  chega a um valor máximo de
+`r max_urbanizacao_fftp`% no município de Caucaia no estado do Ceará, enquanto nos outros municípios o máximo de  
+`r max_urbanizacao_geral`%. 
 
 
 ```{r face wrap deslocamento urbano, fig.align='center', out.width= "80%", dpi=300}
@@ -1200,9 +1366,9 @@ max_urbanizacao_fftp <- banco_completo_5 %>%
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ungroup() %>% 
   ggplot() +
-  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
-  facet_wrap(~name, labeller = label_wrap_gen(40)) +
+  facet_wrap(~name, labeller = label_wrap_gen(35)) +
   theme(legend.justification  = "bottom") +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) + 
   theme_light() +
@@ -1213,7 +1379,7 @@ max_urbanizacao_fftp <- banco_completo_5 %>%
   scale_fill_brewer(name = "UF", palette = "Set2") +
    theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif", face = "bold", size = 10),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold", size = 10),
     axis.text.x=element_text(size = 9, family = "serif"),
     axis.text.y=element_text(size = 8, family = "serif"),
     legend.title = element_blank())+
@@ -1224,15 +1390,7 @@ max_urbanizacao_fftp <- banco_completo_5 %>%
 ```
 
 
-A média da porcentagem de pessoas vulneráveis à pobreza nos municípios
-que adotaram o FFTP é menos de 1%, ou mais precisamente
-`r media_desloc_fftp`%, enquanto a média nos outros municípios é
-`r media_desloc_geral`%. Ou seja, a diferença é realmente bem pequena.
-No primeiro grupo a variação é muito menor e chega a um valor máximo de
-`r max_urbanizacao_fftp`% no município de Caucaia no estado do Ceará.
-
-
-## 12. PIB per capta dos municípios 2018
+## 11. PIB per capta dos municípios
 
 ```{r PIB, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1257,7 +1415,7 @@ banco_completo_5 %>%
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
   geom_col(aes(x = reorder(nome_muni, Pib_Municipal_2018), y = Pib_Municipal_2018, fill = UF),
-           width = 0.65,colour="white", alpha = 0.7) +
+           width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
@@ -1309,7 +1467,7 @@ media_pib_2 <- format_real(media_pib_2)
 ```
 
 
-```{r grafico densidade PIB, fig.align = 'center', out.width = "80%", dpi=300}
+```{r grafico densidade PIB, fig.align = 'center', out.width = "75%", dpi=300}
 
 ## formatação em reais: 
 
@@ -1449,9 +1607,9 @@ taxa_ocupação_geral <- banco_completo_5 %>%
 ```
 
 
-## 13. Prosperidade Social
+## 12. Prosperidade Social
 
-```{r Prosperidade Social , fig.align = 'center', out.width = "80%", dpi=300}
+```{r Prosperidade Social , fig.align = 'center', out.width = "75%", dpi=300}
 
   banco_completo_5  %>% 
   mutate(tarifa_zero = case_when(tarifa_zero == "sim" ~ "Municípios com Tarifa Zero", 
@@ -1462,13 +1620,11 @@ taxa_ocupação_geral <- banco_completo_5 %>%
   tally() %>% 
   mutate(pct_prosperidade = n/sum(n)) %>% 
   ggplot(aes(x = prosperidade_social, y = pct_prosperidade, fill = tarifa_zero)) + 
-  geom_col(width = 0.9, position = "fill", alpha = 0.70) +
-#  facet_wrap(~tarifa_zero) + 
+  geom_col(width = 0.95, position = "fill", alpha = 0.70) +
   xlab("") +
   ylab("") +
   ggtitle("") +
   scale_y_continuous(labels = scales::percent) + 
-#  scale_fill_brewer(name = "", palette = "Set2") + 
   scale_fill_manual(name = "", values = c("#00688b", "#954182"), labels = c("Municípios com Tarifa Zero", "Municípios sem Tarifa Zero")) + 
   geom_label(aes(x = prosperidade_social, y = pct_prosperidade, group = tarifa_zero, label = scales::percent(pct_prosperidade, accuracy = 1)), 
              position = position_fill(vjust = 0.5),family = "serif", fill = "beige", color = "gray22") +
@@ -1486,7 +1642,7 @@ taxa_ocupação_geral <- banco_completo_5 %>%
 
 ```
 
-## 14. Taxa de Atividade 18 anos ou mais
+## 13. Taxa de Atividade 18 anos ou mais
 
 ```{r Taxa de Atividade 18 anos ou mais, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1500,7 +1656,7 @@ banco_completo_5 %>%
                       UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
   geom_col(aes(x = reorder(nome_muni, taxa_atividade_18_anos_ou_mais), y = taxa_atividade_18_anos_ou_mais, fill = UF),
-           width = 0.65,colour="white", alpha = 0.7) +
+           width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
@@ -1528,7 +1684,7 @@ FFTP é `r taxa_ocupação_fftp`% enquanto nos municípios sem a política é
 diferença. No gráfico abaixo podemos observar que os municípios com FFTP
 estão um pouco mais à esquerda do gráfico.
 
-```{r Taxa de Atividade 18 anos ou mais densidade, fig.align = 'center', out.width = "80%", dpi=300}
+```{r Taxa de Atividade 18 anos ou mais densidade, fig.align = 'center', out.width = "75%", dpi=300}
 
 
 banco_completo_5 %>%   
@@ -1587,9 +1743,9 @@ renda_per_capta_max <- banco_completo_5 %>%
 
 ```
 
-## 15. Renda Per Capta Média
+## 14. Renda Per Capta Média
 
-```{r Renda per capta, fig.align = 'center', out.width = "70%", dpi=300}
+```{r Renda per capta, fig.align = 'center', out.width = "75%", dpi=300}
 
 banco_completo_5 %>% 
   mutate(media_nacional = mean(renda_percapta_media)) %>% 
@@ -1600,7 +1756,7 @@ banco_completo_5 %>%
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() + 
   geom_col(aes(x = reorder(nome_muni, renda_percapta_media), y = renda_percapta_media, fill = UF),
-           width = 0.65,colour="white", alpha = 0.7) +
+           width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   xlab("") +
   ylab("") +
@@ -1631,7 +1787,7 @@ reais, do município de Aquirraz no Ceará, enquando a renda per capta
 média máxima é de `r renda_per_capta_max` reais, do município de
 Holambra em São Paulo.
 
-```{r Renda percapta média densidade, fig.align = 'center', out.width = "80%", dpi=300}
+```{r Renda percapta média densidade, fig.align = 'center', out.width = "75%", dpi=300}
 
 renda_tarifa_zero <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
@@ -1660,7 +1816,7 @@ banco_completo_5 %>%
 
 ```
 
-## 16. Índice de Vulnerabilidade Social (IVS)
+## 15. Índice de Vulnerabilidade Social (IVS)
 
 ```{r IVS média geral}
 
@@ -1825,7 +1981,7 @@ banco_completo_5 %>%
   scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
   theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
         strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif", face = "bold"),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold"),
     text = element_text(family = "serif", size = 13),
     axis.text.x=element_text(size = 10, colour = "black"),
     axis.text.y= element_blank(), 
@@ -1856,7 +2012,7 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() +
-  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   facet_grid(~name) +
   theme(legend.position = "bottom") +
@@ -1869,7 +2025,7 @@ banco_completo_5 %>%
   theme_bw() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
           strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif", face = "bold",size = 9),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold",size = 9),
     axis.text.x=element_text(size = 7, family = "serif"),
     axis.text.y=element_text(size = 7, family = "serif"),
     legend.title = element_blank(),
@@ -1879,7 +2035,7 @@ banco_completo_5 %>%
 ```
 
 
-## 17. Índice de Desenvolvimento Humano (IDHM)
+## 16. Índice de Desenvolvimento Humano (IDHM)
 
 ```{r tabela idhm}
 
@@ -2011,7 +2167,7 @@ banco_completo_5 %>%
   theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif", size = 13),
     strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", face = "bold", hjust = 0.5, family = "serif"),
+    strip.text.x = element_text(colour = "#303030", face = "bold", hjust = 0.5, family = "serif"),
     axis.text.x=element_text(size = 10, colour = "black"),
     axis.text.y= element_blank(), 
     panel.spacing = unit(0.1, "lines"),
@@ -2041,7 +2197,7 @@ banco_completo_5 %>%
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
                         UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
   ggplot() +
-  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 0.65,colour="white", alpha = 0.7) +
+  geom_col(aes(x = reorder(nome_muni, value), y = value, fill = UF), width = 1,colour="white", alpha = 0.6) +
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   facet_grid(~name) +
   theme(legend.position = "bottom") +
@@ -2052,9 +2208,9 @@ banco_completo_5 %>%
   ylab("") +
   scale_fill_brewer(name = "UF", palette = "Set2") +
   theme_light() + 
-    theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
+  theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
           strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif", face = "bold",size = 10),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold",size = 10),
     axis.text.x=element_text(size = 7, family = "serif"),
     axis.text.y=element_text(size = 7, family = "serif"),
     legend.title = element_blank(),
@@ -2149,11 +2305,11 @@ que adotaram o FFTP tem uma diferença de 7 pontos a mais na média de
 valores do indicador em relação aos municípios sem essa política. Em
 relação a longevidade, as médias apresentam valores praticamente semelhantes.
 
-## 18. Motivação dos governos
+## 17. Motivação dos governos
 
 
 
-## 19. Movimentos Sociais e Tarifa Zero
+## 18. Movimentos Sociais e Tarifa Zero
 
 ```{r banco passe livre}
 
@@ -2239,24 +2395,22 @@ banco_completo_6 <- banco_completo_5 %>%
           color = "white",
           size = 4,
           show.legend = T, 
-          alpha = 0.6) +
+          alpha = 0.8) +
   geom_sf(data= muni_geobr_5, aes(fill = "Cidades com Movimento Passe Livre"), shape = 21,
           color = "white",
           size = 4,
           show.legend = T,
-          alpha = 0.6) +
+          alpha = 0.8) +
   geom_sf(data= muni_geobr_6, aes(fill = "Cidades com Movimento Tarifa Zero"), shape = 21,
           color = "white",
           size = 4,
           show.legend = T,
-          alpha = 0.6) + 
+          alpha = 0.8) + 
   theme_minimal() + 
   labs(fill = "",
        title = "", 
        caption = "")+
-   scale_fill_manual(name = "", values = c("#00688b", "#a14146", "#446b19"), labels = c("Cidades com Tarifa Zero", 
-                                                                                        "Cidades com Movimento Passe Livre", 
-                                                                                        "Cidades com Movimento Tarifa Zero"))+
+   scale_fill_brewer(name = "", palette = "Set2") +
    theme(plot.title = element_text(family = "serif", size = 12, vjust = 0.0010, hjust = 0.5, color = "cornsilk4"),
          plot.caption = element_text(family = "roboto", size = 9, color = "#404040", hjust = 0.9),
          text = element_text(family = "serif", size = 12))

@@ -1,7 +1,35 @@
 /*------------- Apply Font to Whole Document---------------- */
   
+  .title {
+  margin-top: 1.50em !important;
+  margin-bottom: 0.75em;
+}
   
-  @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500&display=swap');
+    
+.top-text {
+  position: relative;
+  font-size: 24px;
+  padding-bottom: 0.5em
+  text-transform: uppercase;
+  text-align: center;
+  display: block; /* Change to `display: none` for no top text */
+    color: #00688B;
+}
+
+.bottom-text {
+  position: relative;
+  letter-spacing: 0.065em;
+  line-height: 1em;
+  font-size: 55px;
+  text-transform: uppercase;
+  text-align: center;
+  display: block; /* Change to `display: none` for no bottom text */
+    color: #00688B;
+    margin-bottom: 2.5rem;
+  font-weight: bold;
+}
+
 
 h1.title{ 
     color: #00688B;
