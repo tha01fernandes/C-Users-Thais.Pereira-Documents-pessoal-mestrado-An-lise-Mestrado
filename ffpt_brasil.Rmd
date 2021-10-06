@@ -1,6 +1,5 @@
 ---
-title: Análise Exploratória dos municípios que adotaram política de isenção de tarifa
-  no transporte público
+title: Exploratory Analysis of Municipalities in Brazil that have adopted a Fare Free Public Transport
 author: "Thais Fernandes Pereira"
 date: "2021"
 output:
@@ -78,6 +77,7 @@ library("rnaturalearth")
 library("rgeos")
 library("plotly")
 library("ggrepel")
+library("leaflet")
 
 ```
 
@@ -365,29 +365,12 @@ banco_completo_5[21:30] <- lapply(banco_completo_5[21:30], as.numeric)
 
 ## Abstract
 
-O objeto de estudo da pesquisa a qual esse relatório se refere tem como
-recorte empírico o estudo de 30 cidades brasileiras que adotaram a
-isenção integral da tarifa no transporte público. Para a seleção dos
-casos foram utilizados dois critérios definidos por Klebowski (2019)
-para o estudo do que o autor conceitua como Free Fare Public Transport:
-i. A política foi implantada na maioria das redes de transporte da
-cidade; ii. Está disponível para a maioria dos seus usuários, durante a
-maior parte do tempo. Este autor define a política de isenção de tarifa
-no transporte público como uma forma particular de subsídio público
-adotada por governos locais em duas principais modalidades: parcial e
-completa. O foco principal dessa agenda de pesquisa é o estudo da
-política em seu formato completo, ou seja, o subsídio integral do valor
-da tarifa, sendo um dos objetivos centrais entender quais são os motivos
-que levam um governo local a adotar essa política. Também utilizaremos o
-termo FFTP para se referir a política, abreviação de Free Fare Public
-Transport, também seguindo Klebowski (2019). Esse relatório é uma análise
-exploratória de dados públicos a respeito dos municípios estudados.
+This report analyse data from 30 Brazilian cities that have adopted the full fare exemption on public transport, more popularly known in Brazil as the "Tarifa Zero", a term that will be used in this report to refer to the policy. For the selection of cases, two criteria were used: i. The policy was implemented in all transport networks in the city; ii. It is available to all users. We intend to present an exploratory analysis of public data about the studied municipalities and characterize them by checking if there is homogeneity in their economic and social characteristics, in addition to comparing them with all others that have not adopted the policy, with the objective to understand the differences and disparities between the two groups of cities.  
 
 
+## 1. Data base
 
-## 1. Base de Dados com Informações coletadas a respeito dos municípios
-
-Abaixo há uma tabela com informações a respeito dos municípios que adotaram a política de Tarifa Zero. O ano da implementação foi coletado da dissertação de mestrado de Marijke Vermander (2021),"Exploring Fare-Free Public Transport in Brasil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities". O PIB per capta são dados do IBGE 2018, a taxa de urbanização utiliza dados da estimativa da população do IBGE de 2019, a densidade demográfica foi produzida com base em dados dessa mesma estimativa, no entando usando a área total do IBGE de 2020. Os dados de índice de vulnerabilidade social (IVS) são do IPEA e foram produdizos com base em dados do censo de 2010.  Todos os outros dados são provenientes do Índice de Desenvolvimento Humano dos municípios, coletados a partir do Atlas do Desenvolvimento Humano e são dados de 2010. Foi utilizado o pacote AbjData (https://abjur.github.io/abjData/) que contém esses dados sitematizados para todos os municípios brasileiros.   
+Below is a table with information about the municipalities that have adopted the Tarifa Zero policy. The year of implementation was collected from Marijke Vermander's master's thesis (2021), "Exploring Fare-Free Public Transport in Brazil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities". The GDP per capita is IBGE 2018 data, the urbanization rate uses data from the IBGE population estimate for 2019, the population density was produced based on data from this same estimate, however using the total area of the IBGE 2020. Social Vulnerability Index (IVS) data are from IPEA and are published in the "Atlas da Vulnerabilidade Social dos Municípíos Brasileiros" and were produced based on data from the 2010 census. All other data are from the Human Development Index of the municipalities , collected from the "Atlas do Desenvolvimento Humano" and are data from 2010. The AbjData R package (https://abjur.github.io/abjData/) was used, which contains some of these systematized data for all Brazilian municipalities. 
 
 
 ```{r Tabela inicial, fig.align = 'center', out.width = "60%"}
@@ -419,39 +402,39 @@ Abaixo há uma tabela com informações a respeito dos municípios que adotaram 
       align = "center",
       headerStyle = list(background = "#f7f7f8")),
       columns = list(
-      UF = colDef(minWidth = 80, align = "center"),
-      nome_muni = colDef("Cidade", minWidth = 120, align = "center"),
-      ano_implementacao = colDef("Ano da Implementação", minWidth = 140, align = "center"),
-      classe_pop = colDef("Classe Populacional",  minWidth = 120, align = "center"),
-      Pib_Municipal_2018 = colDef("PIB per Capta" , format = colFormat(prefix = "R$ ", separators = TRUE), minWidth = 120),
-      renda_percapta_media = colDef("Renda Per Capta Média" , format = colFormat(prefix = "R$ ", separators = TRUE), minWidth = 150),
-      prosperidade_social = colDef("Prosperidade Social", minWidth = 130),
-      pct_pobres = colDef("% de Pobres" ,  format = colFormat(percent = TRUE, digits = 1), minWidth = 120), 
-      taxa_atividade_18_anos_ou_mais = colDef("Taxa de Atividade 18 anos ou mais" , format = colFormat(percent = TRUE, digits = 1), minWidth = 200),
-      taxa_urbanizacao = colDef("Taxa de Urbanização" , format = colFormat(percent = TRUE, digits = 1), minWidth = 120),
-      ocup_desl = colDef("% de vulneráveis à pobreza que gastam mais de uma hora até o trabalho" , format = colFormat(percent = TRUE, digits = 1), minWidth = 250),
-      taxa_pop_vulneravel_retorna_diariamente_trabalho = colDef("% da população ocupada vulnerável à pobreza que retorna diariamente do trabalho" , 
+      UF = colDef("Federative Unit", minWidth = 95, align = "center"),
+      nome_muni = colDef("City", minWidth = 120, align = "center"),
+      ano_implementacao = colDef("Year of Implementation", minWidth = 140, align = "center"),
+      classe_pop = colDef("Population Class",  minWidth = 120, align = "center"),
+      Pib_Municipal_2018 = colDef("GDP per Capta" , format = colFormat(prefix = "R$ ", separators = TRUE), minWidth = 120),
+      renda_percapta_media = colDef("Average Per Capta Income" , format = colFormat(prefix = "R$ ", separators = TRUE), minWidth = 150),
+      prosperidade_social = colDef("Social Prosperity", minWidth = 130),
+      pct_pobres = colDef("% of Poor" ,  format = colFormat(percent = TRUE, digits = 1), minWidth = 120), 
+      taxa_atividade_18_anos_ou_mais = colDef("Economically Active Pouplation (18+)" , format = colFormat(percent = TRUE, digits = 1), minWidth = 200),
+      taxa_urbanizacao = colDef("Urbanization Rate" , format = colFormat(percent = TRUE, digits = 1), minWidth = 120),
+      ocup_desl = colDef("% of vulnerable to poverty who spend more than an hour to work" , format = colFormat(percent = TRUE, digits = 1), minWidth = 250),
+      taxa_pop_vulneravel_retorna_diariamente_trabalho = colDef("% of the employed population vulnerable to poverty that return daily from work" , 
                                                                 format = colFormat(percent = TRUE, digits = 1), minWidth = 250), 
-      indice_gini = colDef("Índice de Gini" ,  minWidth = 100),
-      indice_theil = colDef("Índice de Theil" ,  minWidth = 100),
-      idhm_class = colDef("IDHM" ,  minWidth = 100),
-      idhm_e_class = colDef("IDHM Educação" ,  minWidth = 100),
-      idhm_r_class = colDef("IDHM Renda" ,  minWidth = 100), 
-      idhm_l_class  = colDef("IDHM Longevidade" , minWidth = 120),
-      ivs_class = colDef("Indice de Vulnerabilidade Social" , minWidth = 150), 
-      ivs_infra_urbana_class = colDef("IVS Infraestrutura Urbana" , minWidth = 150), 
-      ivs_cap_class = colDef("IVS Capital Humano" , minWidth = 150), 
-      ivs_renda_trab_class = colDef("IVS Renda e Trabalho" , minWidth = 150), 
-      area_territorial = colDef("Área Territorial" , format = colFormat(suffix = " km²", separators = TRUE), minWidth = 150),
-      densidade_demografica = colDef("Densidade Demográfica" , format = colFormat(suffix = " hab/km²", separators = TRUE, digits = 3), minWidth = 150),
+      indice_gini = colDef("Gini" ,  minWidth = 100),
+      indice_theil = colDef("Theil-L" ,  minWidth = 100),
+      idhm_class = colDef("Municipal Human Development Index (MHDI)" ,  minWidth = 150),
+      idhm_e_class = colDef("MHDI Education" ,  minWidth = 100),
+      idhm_r_class = colDef("MHDI Income" ,  minWidth = 100), 
+      idhm_l_class  = colDef("MHDI Longevidade" , minWidth = 120),
+      ivs_class = colDef("Social Vulnerability Index (SVI)" , minWidth = 150), 
+      ivs_infra_urbana_class = colDef("SVI Urban Infrastructure" , minWidth = 150), 
+      ivs_cap_class = colDef("SVI Human Capital" , minWidth = 150), 
+      ivs_renda_trab_class = colDef("SVI Income and Work" , minWidth = 150), 
+      area_territorial = colDef("Territorial Area" , format = colFormat(suffix = " km²", separators = TRUE), minWidth = 150),
+      densidade_demografica = colDef("Demographic Density" , format = colFormat(suffix = " hab/km²", separators = TRUE, digits = 3), minWidth = 150),
       pageSizeOptions = c(5,10,15,20,25,30), bordered = TRUE, striped = FALSE, highlight = TRUE))
      
 ```
 
-## 2. Localização dos municípios
+## 2. Localization of municipalities
 
-O mapa abaixo nos mostra a localização das cidades, os pontos
-representam os municípios:
+The map below shows us the location of the cities, the points
+represent the municipalities: 
 
 ```{r Download GEObr, include=FALSE}
 
@@ -489,7 +472,7 @@ geo_ufs <- read_state(code_state = 'all', year = 2018)
 ```
 
 
-```{r mapa teste, fig.align = 'center', out.width = "80%"}
+```{r mapa teste, fig.align = 'center', out.width = "90%"}
 
 geo_ufs_2 %>% 
   st_as_sf(coords=c("geom")) %>%
@@ -559,11 +542,9 @@ geo_ufs_2 %>%
 ```
 
 
-Essa tabela nos mostra a região dos municípios, através dela podemos
-visualizar que mais da metade deles estão localizados no
-sudeste do país. Sabemos que o nordeste é a região do Brasil com mais
-municípios, seguido da região sudeste, no entanto, o nordeste só tem 2
-municípios com FFPT.
+This table shows us the region of the municipalities, through it we can see that more than half of them are located in the
+southeast of the Brazil. We know that the northeast is the region of Brazil with more municipalities, followed by the southeast region, 
+however, the northeast only has 2 municipalities with Tarifa Zero. 
 
 ```{r Região dos Municípios,fig.align = 'center', out.width = "50%"}
 
@@ -579,16 +560,12 @@ municípios com FFPT.
   mutate(pct = n/sum(n)) %>% 
   mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
   select(- n) %>% 
-  kable(digits=1, col.names=c("Região", "Proporção de Municípios")) %>%
+  kable(digits=1, col.names=c("Region", "Proportion of Municipalities")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
 ```
 
-Dos 27 estados brasileiros, sete possuem algum município que implementou
-FFPT. Minas Gerais é o estado com mais municípios no Brasil mas o
-segundo com mais cidades com FFPT, e São Paulo é o segundo com mais
-municípios e no entando o estado com mais cidades que adotaram a
-política.
+In the table below we can see that among 27 Brazilian states, seven have a municipality that has implemented FFPT. Minas Gerais is the state with the most municipalities in Brazil but the second with the most cities with Tarifa Zero, and São Paulo is the second with the most municipalities and yet the state with the most cities that have adopted the policy.
 
 ```{r UF dos municípios, fig.align = 'center', out.width = "50%"}
 
@@ -604,13 +581,13 @@ política.
   mutate(pct = n/sum(n)) %>% 
   mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
   select(- n) %>% 
-  kable(digits=1, col.names=c("UF", "Proporção de Municípios")) %>%
+  kable(digits=1, col.names=c("Federative Unit", "Proportion of Municipalities")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 ```
 
-## 3. Classe Populacional 
+## 3. Population Class
 
-Na tabela abaixo podemos observar a proporção dos municípios em cada classe populacional, tanto dos municípios com Tarifa Zero, quanto dos que não adotaram a política. É possivel observar que que a maior parte dos municípios, 37% deles, tem população entre 20 e 50 mil habitantes enquanto 30% tem população entre 10 e 20 mil habitantes, ou seja, a maior parte dos municípios, 67% tem população entre 10 e 50 mil habitantes o que pode ser considerado de "pequeno porte", entre os municípios que não adotaram a politica, 44% deles percentem a essa classe populacional. É interessante notar que não há municípios com população até 5 mil habitantes e nem maior que 500 mil habitantes que tenha adotado a Tarifa Zero. 
+In the table below, we can see the proportion of municipalities in each population class, both municipalities with Tarifa Zero and those that have not adopted the policy. It is possible to observe that most of the municipalities, 37% of them, have a population between 20 and 50 thousand inhabitants while 30% have a population between 10 and 20 thousand inhabitants, that is, most of the municipalities, 67% have a population between 10 and 50 thousand inhabitants, which can be considered "small", among the municipalities that have not adopted the policy, 44% of them are part of this population class. It is interesting to note that there are no municipalities with a population of up to 5,000 inhabitants or more than 500,000 inhabitants that have adopted the Tarifa Zero. 
 
 ```{r Classe Populacional dos Municípios, fig.align = 'center', out.width = "65%", dpi=300}
 
@@ -646,9 +623,9 @@ Na tabela abaixo podemos observar a proporção dos municípios em cada classe p
                                                     "100.000 Até 500.000", 
                                                     "Maior que 500.000", ordered = TRUE))) %>%
    rename("Classe Populacional" = classe_pop, "Municipios com FFPT" = pct.x, "Municipios sem FFPT" = pct.y) %>%
-   kable(digits=1, col.names=c("Classe Populacional", 
-                               "Municipios com FFPT", 
-                               "Municipios sem FFPT")) %>%
+   kable(digits=1, col.names=c("Population Class", 
+                               "Municipalities with Tarifa Zero", 
+                               "Municipalities without Tarifa Zero")) %>%
    kable_classic_2(full_width = F, html_font = "Cambria") 
    
   
@@ -699,8 +676,7 @@ max_pop_geral <- banco_completo_5 %>%
 
 ```
 
-No gráfico abaixo podemos ver a população estimada de 2019 do IBGE para todas as cidades que adotaram a Tarifa Zero, juntamente com a média nacional (linha vertical). A média populacional dos municípios com a Tarifa Zero é `r media_pop_ffpt` mil habitantes, sendo que há quantidades bem discrepantes, com um máximo de `r max_pop_ffpt`
-como é o caso de Caucaia no Ceará, e um mínimo de `r min_pop_ffpt` habitantes em Pedro Osório no Rio Grande do Sul (IBGE, 2019). Nos municípios que não adotaram a política a média populacional é `r media_pop_geral`, mas também com valores muito discrepantes, chegando a um máximo de `r max_pop_geral` mil habitantes, como é o caso da cidade de São Paulo. No gráfico abaixo é possível comparar os municípios com a Tarifa Zero entre si: 
+In the graph below, we can see the estimated population of 2019 by the IBGE for all cities that adopted the Tarifa Zero, together with the national average (vertical line). The population average of the municipalities with the Zero Tariff is `r media_pop_ffpt` thousand inhabitants, with very different amounts, we have a maximum of `r max_pop_ffpt` as is the case of Caucaia in Ceará, and a minimum of `r min_pop_ffpt` inhabitants in Pedro Osório in Rio Grande do Sul (IBGE, 2019). In municipalities that have not adopted the policy, the population average is `r media_pop_geral`, but also with very different values, reaching a maximum of `r max_pop_geral` thousand inhabitants, as is the case of the city of São Paulo. In the chart below, it is possible to compare the municipalities with the Tarifa Zero against each other: 
    
 
 ```{r fig.align = 'center', out.width = "80%", dpi=300}
@@ -739,7 +715,7 @@ banco_completo_5 %>%
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 8.5, family = "serif"),
+    axis.text.x=element_text(size = 11, family = "serif"),
     axis.text.y=element_text(size = 10, family = "serif"),
     legend.title = element_blank())+
     coord_flip()
@@ -747,15 +723,15 @@ banco_completo_5 %>%
 
 ```
 
-## 4. Ano de Implementação da Política de FFPT
+## 4. Year of Implementation 
 
-A partir do gráfico abaixo podemos verificar que 70% dos municípios que adotaram FFPT o fizeram depois de 2010,
-seguindo uma tendência mundial já observada por Klebowski (2019), no
-entanto, como mostrado na tabela inicial deste relatório, há três casos
-de municípios que adotaram a política ainda nos anos 1990, como Monte
-Carmelo (MG) que adotou em 1994, Potirendaba (SP) em 1998 e Abaeté
-(MG)em 1997. Assim como a quatro municípios que adotaram em caracter permanente a política em 2021, são eles: 
-Caucaia no Ceará, Caeté e Cláudio em Minhas Gerais e Formosa em Goiania. 
+From the graph below, we can see that 70% of the municipalities that adopted Tarifa Zero did so after 2010,
+following a global trend already observed by Klebowski (2019), 
+however, as shown in the opening table of this report, there are three cases
+of municipalities that adopted the policy in the 1990s, such as Monte
+Carmelo (MG) which have adopted in 1994, Potirendaba (SP) in 1998 and Abaeté
+(MG) in 1997. As well as the four municipalities that permanently adopted the policy in 2021, they are:
+Caucaia in Ceará, Caeté and Cláudio in Minhas Gerais and Formosa in Goiania.  
 
 ```{r Ano de Implementacao, fig.align = 'center', out.width = "65%", dpi=300}
 
@@ -807,9 +783,9 @@ min_urbanizacao_fftp <- banco_completo_5 %>%
 
 ```
 
-## 5. Taxa de Urbanização
+## 5. Urbanization Rate
 
-No gráfico abaixo podemos observar a taxa de urbanização dos municípios estudados, a linha horizontal indica a taxa média nacional de urbanização. 
+In the graph below we can see an urbanization rate of the studied municipalities, a horizontal line indicates a national average rate of urbanization. 
 
 ```{r Taxa de Urbanização, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -832,7 +808,7 @@ banco_completo_5 %>%
     scale_fill_brewer(name = "UF", palette = "Set2")+
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 12, family = "serif"),
+    axis.text.x=element_text(size = 11, family = "serif"),
     axis.text.y=element_text(size = 10, family = "serif"),
     legend.title = element_blank())+
     coord_flip()
@@ -840,20 +816,20 @@ banco_completo_5 %>%
 
 ```
 
+There is a difference between the average urbanization rate of municipalities
+who adopted Tarifa Zero and those who did not. The average rate of the first group is
+`r media_urbanizacao_fftp`% while the second is
+`r media_urbanizacao_geral`%. In the first group, two municipalities appear with values that
+approximate the average of the second group, Itatiaiuçu (MG) with 62% of
+urbanization and Pitanga (PR) with 63%. The other municipalities have
+urbanization greater than 70%.
 
-Há uma diferença entre as médias da taxa de urbanização dos municípios
-que adotaram FFPT e os que não adotaram. A taxa média do primeiro grupo é
-`r media_urbanizacao_fftp`% enquanto do segundo é
-`r media_urbanizacao_geral`%. No primeiro grupo, dois municípios aparecem com valores que se
-aproximam da média do segundo grupo, Itatiaiuçu (MG) com 62% de
-urbanização e Pitanga (PR) com 63%. Os outros municípios apresentam
-urbanização maior que 70%.
+The density graph, below, better illustrates the
+distribution of urbanization rates in all municipalities
+studied. There is a very large variation in the municipalities that have not adopted the
+political, even because they are in much greater quantity, but the interesting thing is to note that the municipalities with Tarifa Zero
+are more to the right of the graph, that is, they are mostly well urbanized cities. 
 
-O grafico de densidade, logo abaixo, ilustra melhor a
-distribuição das taxas de urbanização em todos os municípios
-estudados.Há uma variação muito grande nos municípios que não adotaram a
-política, até porque estão em muita maior quantidade, mas o interessante é observar que os municípios com Tarifa Zero 
-estão mais a direita do gráfico, ou seja, trata-se de cidades bem urbanizadas em sua maioria. 
 
 ```{r Taxa de Urbanização densidade, echo=FALSE, fig.align = 'center', out.width = "70%", dpi=300}
 
@@ -868,11 +844,11 @@ banco_completo_5  %>%
   scale_x_continuous(labels = scales::percent)+
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#815074"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#815074"), labels = c("No", "Yes"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 11, colour = "black"),
-    axis.text.y=element_text(size = 11, colour = "black"), 
+    axis.text.x=element_text(size = 11),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.1, "lines"),
  #   strip.text.x = element_text(size = 6),
     legend.position = "bottom")
@@ -880,9 +856,9 @@ banco_completo_5  %>%
 
 ```
 
-## 6. Densidade Demográfica
+## 6. Demographic density
 
-A densidade demográfica brasileira varia bastante, as capitais e grande metrópolis possuem uma densidade demográfica muito diferente das pequenas cidades mais ao interior do país. Os municípios que adotaram política de Tarifa Zero são em geral cidades de "pequeno porte", e por isso com baixíssima densidade demográfica, no gráfico abaixo podemos observar que apenas Vargem Grande Paulista em São Paulo chega a 1 habitante por km². A média nacional é 0,5 habitante por km², mas como dissemos antes, esse valor pode variar muito e por isso é bem pouco exato. Talvez ele seja muito pequeno pois no Brasil as cidades são em sua maioria de pequeno a médio porte mas no entanto maior parte da população está concentrada nas capitais e grandes metrópolis. 
+The Brazilian demographic density varies a lot, the capitals and large metropolis have a very different demographic density from the small cities in the countryside. The municipalities that adopted the Tarifa Zero policy are generally "small" cities, and therefore with very low population density, in the graph below we can see that only Vargem Grande Paulista in São Paulo reaches 1 inhabitant per km². The national average is 0.5 inhabitant per km², but as we said before, this value can vary a lot and that is why it is very inaccurate. Maybe it's too small because in Brazil the cities are mostly small to medium-sized but nevertheless most of the population is concentrated in capitals and large metropolises.  
 
 
 ```{r densidade demográfica, fig.align = 'center', out.width = "80%", dpi=300}
@@ -925,7 +901,8 @@ banco_completo_5 %>%
 
 ```
 
-No gráfico de densidade abaixo estamos mostrando apenas os municípios brasileiros com densidade demográfica menor que 0.4 habitante por km², ou seja, 5.189 municípios, para que o gráfico não ficasse com valores muito discrepantes e por conta disso, de difícil visualização. Nele podemos observar a concentração dos municípios com Tarifa Zero mais à direita do gráfico, o que indica que há um padrão de menor densidade demográfica nesse grupo em relação a todos os outros. 
+In the density graph below, we are showing only Brazilian municipalities with demographic density less than 0.4 inhabitant per km², that is, 93% of the municipalities, so that the graph would not have very discrepant values and, therefore, difficult to visualize. In it, we can observe the concentration of municipalities with a Tarifa Zero on the far right of the graph, which indicates that there is a pattern of lower population density in this group in relation to all others. 
+
 
 ```{r fig.align = 'center', out.width = "70%", dpi=300}
 
@@ -938,34 +915,34 @@ banco_completo_5  %>% filter(densidade_demografica < 0.4) %>%
   scale_x_continuous(labels = format_densidade_demografica) +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("Yes", "No"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 11, colour = "black"),
-    axis.text.y=element_text(size = 11, colour = "black"), 
+    axis.text.x=element_text(size = 11),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.10, "lines"),
     legend.position = "bottom")
 
 ```
 
-## 7. Plano de Mobilidade Urbana
+## 7. Urban Mobility Plan
 
-Um dispositivo importante da Lei de Diretrizes da Política Nacional de
-Mobilidade Urbana (Lei n.12.587/2012) é a obrigatoriedade do
-desenvolvimento de planos diretores de mobilidade urbana a todos os
-municípios com mais de 20 mil habitantes, de acordo com os padrões
-estabelecidos pela lei, sofrendo pena de não recebimento dos repasses
-destinados ao setor no caso de não apresentação do plano em até três
-anos a partir da vigência da lei, além da exigência de atualização e
-revisão periódica do plano. Segundo levantamento do Ministério das
-Cidades em 2016, do total de 5.569 municípios brasileiros, 60% se
-enquadram nos critérios estabelecidos pelo Estatuto da Cidade e pela Lei
-de Mobilidade, devendo assim desenvolver o plano. Dos municípios com
-FFPT apenas 18 têm a obrigação de desenvolver plano diretor. Nessa
-análise consideramos apenas os municípios que no levantamento da
-Secretaria Nacional de Mobilidade e Serviços Urbanos (SEMOB) responderam
-"sim" ou "não" para a pergunta sobre a execução do plano de mobilidade
-urbana,não tendo sido considerado as cidades que não responderam.
+An important provision of the National Policy Guidelines Law for
+Urban Mobility (Law n.12.587/2012) is the obligation of the
+development of urban mobility master plans for all
+municipalities with more than 20 thousand inhabitants, according to the standards
+established by law, suffering the penalty of not receiving the transfers
+intended for the sector in case the plan is not presented within three
+years after the enactment of the law, in addition to the requirement to update and
+periodic review of the plan. According to a survey by the Ministry of
+Cities in 2016, out of a total of 5,569 Brazilian municipalities, 60% meet the 
+established criteria by the City Statute and the Law
+Mobility, and should therefore develop the plan. Of the municipalities with
+Tarifa Zero only 18 have an obligation to develop master plan. In this
+analysis we considered only the municipalities that in the survey of
+National Secretariat of Mobility and Urban Services (SEMOB) responded
+"yes" or "no" to the question about the execution of the mobility plan
+urban, not considering the cities that did not respond. 
 
 
 ```{r Plano de Mobilidade Urbana}
@@ -1004,9 +981,9 @@ plano_mob_3 <- banco_completo_5  %>%
   plano_mob_2 %>% 
   full_join(plano_mob_3, by="plano_mob") %>% 
   filter(plano_mob == "Sim") %>% 
-  kable(digits=1, col.names=c("Tem Plano de Mob. Urbana?", 
-                              "Municípios sem FFPT", 
-                              "Municípios com FFPT")) %>%
+  kable(digits=1, col.names=c("Mobility Plan?", 
+                              "Municipalities without Tarifa Zero", 
+                              "Municipalities with Tarifa Zero")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
   
@@ -1014,11 +991,11 @@ plano_mob_3 <- banco_completo_5  %>%
 
 ```
 
-Esses são os seis Municípios com a Política de Tarifa Zero, que possuem
-plano de mobilidade urbana como estabelecido pela Lei Federal nº
-12.587/2012, segundo levantamento da Secretaria Nacional de Mobilidade e
-Serviços Urbanos (SEMOB),foi atualizado pela última vez em fevereiro de
-2019.
+These are the six Municipalities with the Tarifa Zero Policy, which have
+urban mobility plan as established by Federal Law number
+12587/2012, according to a survey by the National Secretariat for Mobility and
+Urban Services (SEMOB), which was last updated in February
+2019: 
 
 ```{r Plano de Mobilidade Tabela}
 
@@ -1033,15 +1010,16 @@ tab_plano_mob %>%
   
   mutate_if(is.character, str_to_title) %>% 
   mutate(UF = case_when(UF == "Mg" ~ "MG", UF == "Sp" ~"SP", UF == "Pr" ~ "PR", TRUE ~ UF)) %>% 
-  kable(digits=2, col.names=c("UF", "Municipio", 
-                              "Classe Populacional", 
-                              "Ano de elaboração")) %>%
+  kable(digits=2, col.names=c("Federative Unit", "Municipality", 
+                              "Population Class", 
+                              "Year of elaboration ")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
 
 ```
 
-## 8. Índice de Gini e de Theil
+
+## 8. Gini and Theil- L Index 
 
 
 ```{r Indice de Gini e Theil media geral}
@@ -1079,18 +1057,17 @@ media_indice_theil_geral <- banco_completo_5 %>%
 ```
 
 
-Gini e L de Theil - L são dois índices de desigualdade bastante utilizados, ambos medem o
-grau de concentração de renda em determinado grupo e variam de 0 a 1,
-sendo 0 uma situação de completa igualdade, e 1 uma situação de completa
-desigualdade, além disso ambos estão utilizando dados provenientes do censo 2010. 
-No gráfico abaixo podemos observar a distribuição dos valores entre os municípios que adotaram a Tarifa Zero. 
-A média geral do índice de Gini nos municípios estudados é
-de `r media_indice_gini_tf`, enquanto dos municípios sem Tarifa Zero é
-`r media_indice_gini_geral`. Há apenas uma pequena diferença nas médias.E o mesmo ocorre para o 
-índice de Theil - L, em que a média no primeiro grupo é de `r `media_indice_theil_tf`, enquanto no segundo grupo é
-de `r media_indice_theil_geral `, mas do mesmo modo os municípios com Tarifa Zero apresentam valores que indicam menor desigualdade
-social. Abaixo podemos observar o gráfico da distribuição dos valores dos dois índices para todos
-os municípios com Tarifa Zero: 
+Gini and Theil - L are two widely used inequality indices, both measure the
+degree of income concentration in a given group and range from 0 to 1,
+0 being a situation of complete equality, and 1 being a situation of complete
+inequality, in addition both are using data from the 2010 census.
+The general average of the Gini index in the studied cities is
+ `r media_indice_gini_tf`, while for municipalities without a Zero Tariff it is
+`r media_indice_gini_geral`. There is only a small difference in the averages. And the same is true for the
+Theil-L index, where the mean in the first group is `r media_indice_theil_tf`, while in the second group it is
+de `r media_indice_theil_geral`, but similarly the municipalities with Tarifa Zero present values that indicate less social inequality.
+Below we can see the distribution graph of the values of the two indexes for all
+the municipalities with a Tarifa Zero: 
 
 
 
@@ -1103,8 +1080,8 @@ banco_completo_5 %>%
   group_by(name) %>% 
   mutate(media_nacional = mean(value)) %>% 
   mutate(name = case_when(
-    name == "indice_gini" ~ "Índice de Gini",
-    name == "indice_theil" ~ "Índice de Theil")) %>% 
+    name == "indice_gini" ~ "Gini",
+    name == "indice_theil" ~ "Theil-L")) %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
@@ -1114,13 +1091,13 @@ banco_completo_5 %>%
   geom_errorbar(mapping = aes(x = nome_muni, y = media_nacional, ymin = media_nacional, ymax = media_nacional), size = 0.5) +
   facet_wrap(~name) +
   theme(legend.position = "bottom") +
-  theme_bw() +
+  theme_light() +
   labs(fill = "UF",
        title = "") +
   xlab("") +
   ylab("") +
   scale_fill_brewer(name = "UF", palette = "Set2") +
-  theme_bw() + 
+  theme_light() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
           strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
     strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif", face = "bold"),
@@ -1132,10 +1109,9 @@ banco_completo_5 %>%
 
 ```
 
-No gráfico de densidade abaixo é possível observar que há
-algumas diferenças na distribuição dos valores mas elas são bem pequenas, a curva referente às
-cidades com FFPT está mais à esquerda enquanto a dos outros municípios
-está mais à direita.
+In the density graph below it is possible to see that there is
+some differences in the distribution of values but they are very small, the curve referring to
+cities with Tarifa Zero is more to the left while that of the other cities is more to the right. 
 
 ```{r Gráfico GINI e Theil, echo=FALSE, fig.align = 'center', out.width = "75%", dpi=300}
 
@@ -1144,8 +1120,8 @@ está mais à direita.
 banco_completo_5 %>% 
   pivot_longer(cols = c("indice_gini", "indice_theil")) %>%
   mutate(name = case_when(
-    name == "indice_gini" ~ "Índice de Gini",
-    name == "indice_theil" ~ "Índice de Theil - L")) %>% 
+    name == "indice_gini" ~ "Gini",
+    name == "indice_theil" ~ "Theil - L")) %>% 
   ggplot() +
   geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
   facet_wrap(~name) +
@@ -1155,13 +1131,13 @@ banco_completo_5 %>%
        title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFPT?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
         strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
     strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold",  size = 12),
     text = element_text(family = "serif", size = 13),
-    axis.text.x=element_text(size = 10, colour = "black"),
-    axis.text.y=element_text(size = 11, colour = "black"), 
+    axis.text.x=element_text(size = 10),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.1, "lines"),
     legend.position = "bottom")
 
@@ -1186,17 +1162,18 @@ media_pct_pobres_geral <- banco_completo_5 %>%
 
 ```
 
-## 9. Porcentagem de Pobres
+## 9. Percentage of Poor
 
-O gráfico abaixo mostra a porcentagem de pobres em cada município estudado e a linha vertical representa a média nacional. 
-Esse indicador considera pobre o indivíduo que recebe menos que 436
-reais como renda mensal, que é a linha de pobreza recomendada
-internacionalmente para uso em países de renda média-alta com é o caso
-do Brasil, e foo produzido a partir de dados do censo de 2010. Há uma diferença considerável entre as médias encontradas no
-grupo de cidades que adotaram FFTP e os que não adotaram. Enquanto o
-primeiro grupo tem uma média de porcentagem de pobres de
-`r media_pct_pobres_fftp`%, o segundo grupo tem
-`r media_pct_pobres_geral`%, o que corresponde a uma diferença de 14%.
+The graph below shows the percentage of poor people in each municipality studied and the vertical line represents the national average.
+This indicator considers the individual who earns less than R$ 436 
+reais as monthly income, which is the recommended poverty line
+internationally for use in upper-middle income countries with is the case
+from Brazil, and was produced from 2010 census data. There is a considerable difference between the averages found in the
+group of cities that have adopted a Tarifa Zero and those that have not. While the
+first group has an average percentage of poor from
+`r media_pct_pobres_fftp`%, the second group has
+`r media_pct_pobres_geral`%, which corresponds to a difference of 14%. 
+
 
 ```{r Porcentagem de pobres, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1219,18 +1196,16 @@ banco_completo_5 %>%
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 12, family = "serif"),
+    axis.text.x=element_text(size = 11, family = "serif"),
     axis.text.y=element_text(size = 10, family = "serif"),
     legend.title = element_blank())+
     coord_flip()
 
 ```
 
+Observing the density graph below, it is also possible to verify how much this percentage 
+varies in Brazilian municipalities and also how much the curve of cities that adopted Tarifa Zero is more to the left of the graph.
 
-Observando o gráfico de densidade abaixo, também é possível verificar o
-quanto esse percentual varia nos municípios brasileiros e também o
-quanto a curva das cidades que adotaram FFPT está mais à esquerda do
-gráfico.
 
 ```{r Porcentagem de Pobres densidade, echo=FALSE, fig.align='center', out.width= "70%", dpi=300}
 
@@ -1239,15 +1214,15 @@ banco_completo_5 %>%
   ggplot() +
   geom_density(aes(x= pct_pobres , fill=tarifa_zero), alpha=0.5) +
   theme_minimal()+
-  labs(fill = "Tem Política de FFTP?",
+  labs(fill = "Tem Política de FFPT?",
        title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 11, colour = "black"),
-    axis.text.y=element_text(size = 11, colour = "black"), 
+    axis.text.x=element_text(size = 11),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.1, "lines"),
     legend.position = "bottom") +
   scale_x_continuous(labels = scales::percent)
@@ -1277,7 +1252,7 @@ max_deslocamento_fftp <- banco_completo_5 %>%
 
 ```
 
-## 10. Deslocamento e Pobreza
+## 10. Urban Displacement and Poverty
 
 
 ```{r medias deslocamento e pobreza}
@@ -1334,18 +1309,15 @@ max_urbanizacao2_geral <- banco_completo_5 %>%
 
 ```
 
-Essa métrica de deslocamento e pobreza no Brasil é um dado poduzido a partir do censo de 2010. 
-A média da porcentagem da população ocupada vulnerável à pobreza que retorna diariamente do trabalho nos 
-municípios com Tarifa Zero é `r media_desloc2_fftp` enquanto nos outros municípios é de `r media_desloc2_geral`, ou seja, um pouco mais alto
-mas ainda uma diferença muito pequena. Esses valores chegam a máximo de `r max_urbanizacao2_fftp` nos municípios com Tarifa Zero, enquanto 
-`r max_urbanizacao2_geral` nos outros municiípios. 
-A média da porcentagem de pessoas vulneráveis à pobreza que gastam mais de uma hora até o trabalho, por sua vez, nos municípios
-que adotaram o FFPT é menos de 1%, ou mais precisamente
-`r media_desloc_fftp`%, enquanto a média nos outros municípios é ligeiramente maior,
-`r media_desloc_geral`%. Ou seja, a diferença é realmente bem pequena.
-No primeiro essa porcetagem  chega a um valor máximo de
-`r max_urbanizacao_fftp`% no município de Caucaia no estado do Ceará, enquanto nos outros municípios o máximo de  
-`r max_urbanizacao_geral`%. 
+This displacement and poverty metric in Brazil is data produced from the 2010 census.
+The average percentage of the occupied population vulnerable to poverty who return daily from work in municipalities with a Tarifa Zero
+is `r media_desloc2_fftp`% while in other municipalities it is `r media_desloc2_geral`%, that is, a little higher but still a very small difference. 
+These values reach a maximum of `r max_urbanizacao2_fftp`% in municipalities with Tarifa Zero, while `r max_urbanizacao2_geral`% in other municipalities.
+The average percentage of people vulnerable to poverty who spend more than an hour to work, in turn, in municipalities that have adopted the Tarifa Zero
+is less than 1%, or more precisely `r media_desloc_fftp`%, while the average in other municipalities is slightly higher,
+`r media_desloc_geral`%. In other words, the difference is really very small.
+In the first group, this percentage reaches a maximum value of `r max_urbanizacao_fftp`% in the municipality of Caucaia in the 
+state of Ceará, while in the other municipalities the maximum of `r max_urbanizacao_geral`%. 
 
 
 ```{r face wrap deslocamento urbano, fig.align='center', out.width= "80%", dpi=300}
@@ -1358,8 +1330,8 @@ No primeiro essa porcetagem  chega a um valor máximo de
   mutate(media_nacional = mean(value)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate(name = case_when(
-    name == "ocup_desl" ~ "% de vulneráveis à pobreza que gastam mais de uma hora até o trabalho",
-    name == "taxa_pop_vulneravel_retorna_diariamente_trabalho" ~ "% da população ocupada vulnerável à pobreza que retorna diariamente do trabalho")) %>%
+    name == "ocup_desl" ~ "% of vulnerable to poverty who spend more than an hour to work",
+    name == "taxa_pop_vulneravel_retorna_diariamente_trabalho" ~ "% of the employed population vulnerable to poverty that return daily from work")) %>%
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
@@ -1390,7 +1362,42 @@ No primeiro essa porcetagem  chega a um valor máximo de
 ```
 
 
-## 11. PIB per capta dos municípios
+## 11. GDP per capita
+
+
+```{r PIB média geral}
+
+# PIB médio 
+
+media_pib_1 <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(Pib_Municipal_2018)) %>%
+  round(digits = 0) %>% 
+  pull()
+
+media_pib_2 <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(Pib_Municipal_2018, na.rm = TRUE)) %>% 
+  round(digits = 0) %>% 
+  pull()
+
+# formatação reais 
+
+format_real <- function(values, nsmall = 0) {
+  values %>%
+    as.numeric() %>%
+    format(nsmall = nsmall, decimal.mark = ",", big.mark = ".") %>%
+    str_trim() %>%
+    str_c("R$ ", .)
+}
+
+media_pib_1 <- format_real(media_pib_1)
+media_pib_2 <- format_real(media_pib_2)
+  
+```
+
+GDP per capita is data produced by IBGE from 2018. The average GDP per capita of the municipalities studied is `r media_pib_1` while the average in Brazilian municipalities that have not adopted the policy is `r media_pib_2`. Looking at this general average, we can say that the GDP per capita of the municipalities that 
+adopted the  Tarifa Zero is almost the double of the Brazilian municipalities that did not adopt it, however, when we observe this value by region and federative unit of the country, we verify that these values can vary widely. Below is a graph with all municipalities that adopted the policy together with the national average: 
 
 ```{r PIB, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1434,40 +1441,9 @@ banco_completo_5 %>%
 
 ```
 
+Below we have a density graph that compares the distribution of the per capita GDP values of the municipalities that adopted the policy and those that did not. Among the group of cities without the Tarifa Zero, only municipalities with a per capita GDP of less than 20 thousand reais were selected, which corresponds to 99% of the municipalities, so that the graph would not be disproportionate and difficult to visualize, and we can see that, in fact, the municipalities with the policy are more to the right of the graph. 
 
-```{r PIB média geral}
-
-# PIB médio 
-
-media_pib_1 <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  summarize(mean(Pib_Municipal_2018)) %>%
-  round(digits = 0) %>% 
-  pull()
-
-media_pib_2 <- banco_completo_5 %>% 
-  filter(tarifa_zero != "sim") %>% 
-  summarize(mean(Pib_Municipal_2018, na.rm = TRUE)) %>% 
-  round(digits = 0) %>% 
-  pull()
-
-# formatação reais 
-
-format_real <- function(values, nsmall = 0) {
-  values %>%
-    as.numeric() %>%
-    format(nsmall = nsmall, decimal.mark = ",", big.mark = ".") %>%
-    str_trim() %>%
-    str_c("R$ ", .)
-}
-
-media_pib_1 <- format_real(media_pib_1)
-media_pib_2 <- format_real(media_pib_2)
-  
-```
-
-
-```{r grafico densidade PIB, fig.align = 'center', out.width = "75%", dpi=300}
+```{r grafico densidade PIB, fig.align = 'center', out.width = "70%", dpi=300}
 
 ## formatação em reais: 
 
@@ -1482,35 +1458,25 @@ format_real <- function(values, nsmall = 0) {
 ## gráfico: 
 
 banco_completo_5 %>% 
- filter(Pib_Municipal_2018 < 20000000) %>% 
+  filter(Pib_Municipal_2018 < 20000000) %>% 
   ggplot()+
   geom_density(aes(x = Pib_Municipal_2018, fill = tarifa_zero),  colour="black", alpha = 0.6) +
   labs(title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme_minimal()+
     theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif", size = 12),
-    axis.text.x=element_text(size = 10, colour = "black"),
-    axis.text.y=element_blank(), 
+    axis.text.x=element_text(size = 10),
+    axis.text.y=element_text(size = 10), 
     panel.spacing = unit(0.1, "lines"),
     legend.position = "bottom") +
     scale_x_continuous(labels = format_real)
 
 ```
 
-
-O PIB per capta dos municípios estudados é de `r media_pib_1` enquanto a
-média nos municípios brasileiros que não adotaram a política é
-`r media_pib_2`. Olhando para essa média geral podemos dizer que o PIB
-per capta dos municípios que adotaram a FFTP é quase dobro do que a
-média dos municípios brasileiros que não adotaram,no entanto,quando
-observamos esse valor por região e unidade federativa do
-país,verificamos que esses valores podem variar bastante. Nas regiões
-nordeste e sudeste, de fato, o PIB per capta, na comparação,é bem maior,
-no entanto os municípios do centro oeste e sul apresentam médias
-menores.
+In the table below we have the average per capita GDP by region in the two groups of municipalities. In it we can observe that the northeast and southeast regions, in fact, the average GDP per capita, in comparison, is much higher, however the cities in the center west and south have lower averages. 
 
 
 ```{r PIB por região}
@@ -1545,18 +1511,14 @@ pib_regiao_2$media_pib_geral <- format_real(pib_regiao_2$media_pib_geral)
 # Tabela
 
   pib_regiao_1 %>% full_join(pib_regiao_2, by= "REGIAO") %>% 
-  kable(digits=0, col.names=c("Região", "Munic.com FFTP", "Munic.sem FFTP")) %>%
+  kable(digits=0, col.names=c("Region", "Municipality with Tarifa Zero", "Municipality without Tarifa Zero")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
   
 
 
 ```
 
-Os estados que apresentam média de PIB per capta dos municípios, que
-adotaram a FFTP maior que os municípios que não adotaram são quatro:
-Ceará, Minas Gerais, Rio de Janeiro e São Paulo. Os outros dois, Goiás e
-rio Grande do Sul, são os municípios que apresentam valores menores, o
-que acompanha o dado por região do pais.
+Here we can see the same data for the states with municipalities that adopted Tarifa Zero. Between the two group we have four states where the GPD is higher in the municipalities with Tarifa Zero: Ceará, Minas Gerais, Rio de Janeiro and São Paulo. The other two, Goiás and Rio Grande do Sul, are the states with lower values, which follows the data by region of the country. 
 
 ```{r PIB por Estado}
 
@@ -1581,16 +1543,19 @@ pib_uf_2$media_2 <- format_real(pib_uf_2$media_2)
 # tabela
 
 pib_uf_1 %>% full_join(pib_uf_2, by= "UF") %>% 
-  kable(digits=2, col.names=c("UF", "Munic.com FFTP", "Munic.sem FFTP")) %>%
+  kable(digits=2, col.names=c("Federative Unit","Municipality with Tarifa Zero", "Municipality without Tarifa Zero")) %>%
   kable_classic_2(full_width = F, html_font = "Cambria")
 
 ```
+
+## 12. Economically Active Pouplation (18+)
+
 
 ```{r media - taxa de ocupação}
 
 # média da taxa de ocupação  
 
-taxa_ocupação_fftp <- banco_completo_5 %>% 
+taxa_ocupação_ffpt <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   summarize(media_1 = mean(taxa_atividade_18_anos_ou_mais)) %>% 
   round(digits = 2) %>% 
@@ -1607,42 +1572,8 @@ taxa_ocupação_geral <- banco_completo_5 %>%
 ```
 
 
-## 12. Prosperidade Social
+The activity rate corresponds to the percentage of the adult population (18 years old or more) who are economically active, that is, who are occupied or who sought work in the month prior to the survey, in this case, the 2010 IBGE survey. average occupancy rate in municipalities with Tarifa Zero is `r taxa_ocupação_ffpt`% while in municipalities without the policy is `r taxa_ocupação_geral`%, therefore slightly higher, but very little difference. The chart below shows the percentage for each municipality, we can see that in general it is above 60% with only the exception of Pedro Osório in Rio Grande do Sul. 
 
-```{r Prosperidade Social , fig.align = 'center', out.width = "75%", dpi=300}
-
-  banco_completo_5  %>% 
-  mutate(tarifa_zero = case_when(tarifa_zero == "sim" ~ "Municípios com Tarifa Zero", 
-                                 tarifa_zero == "não"~ "Municípios sem Tarifa Zero", TRUE ~ tarifa_zero)) %>% 
-  mutate(prosperidade_social = factor(prosperidade_social, levels = c("Muito Alto", "Alto", "Médio", 
-        "Baixo", "Muito Baixo", ordered = T))) %>% 
-  group_by(tarifa_zero, prosperidade_social) %>% 
-  tally() %>% 
-  mutate(pct_prosperidade = n/sum(n)) %>% 
-  ggplot(aes(x = prosperidade_social, y = pct_prosperidade, fill = tarifa_zero)) + 
-  geom_col(width = 0.95, position = "fill", alpha = 0.70) +
-  xlab("") +
-  ylab("") +
-  ggtitle("") +
-  scale_y_continuous(labels = scales::percent) + 
-  scale_fill_manual(name = "", values = c("#00688b", "#954182"), labels = c("Municípios com Tarifa Zero", "Municípios sem Tarifa Zero")) + 
-  geom_label(aes(x = prosperidade_social, y = pct_prosperidade, group = tarifa_zero, label = scales::percent(pct_prosperidade, accuracy = 1)), 
-             position = position_fill(vjust = 0.5),family = "serif", fill = "beige", color = "gray22") +
-  theme_minimal() + 
-    theme(plot.title = element_text(family = "serif", size = 16, face = "bold", hjust = 0.5, colour = "black"),
-   strip.background = element_rect(colour = "white", fill = "palevioletred"),
-    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif"),
-    text = element_text(size = 14, family = "serif", colour = "gray22"),
-    axis.text.x=element_text(size = 9, family = "serif"),
-    axis.text.y=element_text(size = 11, family = "serif"),
-    legend.title = element_blank(),
-    legend.position = "bottom")
-
-
-
-```
-
-## 13. Taxa de Atividade 18 anos ou mais
 
 ```{r Taxa de Atividade 18 anos ou mais, fig.align = 'center', out.width = "80%", dpi=300}
 
@@ -1662,11 +1593,11 @@ banco_completo_5 %>%
   ylab("") +
   labs(title = "") + 
   scale_y_continuous(labels = scales::percent) +
-  scale_fill_brewer(name = "UF", palette = "Set2")+
+  scale_fill_brewer(name = "UF", palette = "Set2") +
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 12, family = "serif"),
+    axis.text.x=element_text(size = 11, family = "serif"),
     axis.text.y=element_text(size = 10, family = "serif"),
     legend.title = element_blank())+
     coord_flip()
@@ -1674,15 +1605,7 @@ banco_completo_5 %>%
 
 ```
 
-
-A taxa de atividade corresponde ao percentual da população adulta (18
-anos ou mais) que é economicamente ativa, ou seja, que está ocupada ou,
-procurou trabalho no mês anterior à realização da pesquisa, no caso, o
-senso do IBGE de 2010. A média da taxa de ocupação nos municípios com
-FFTP é `r taxa_ocupação_fftp`% enquanto nos municípios sem a política é
-`r taxa_ocupação_geral`%, portanto ligeiramente maior, mas bem pouca
-diferença. No gráfico abaixo podemos observar que os municípios com FFTP
-estão um pouco mais à esquerda do gráfico.
+In the density graph below, we can see that municipalities with Tarifa Zero (in purple) are a little more to the right of the graph. 
 
 ```{r Taxa de Atividade 18 anos ou mais densidade, fig.align = 'center', out.width = "75%", dpi=300}
 
@@ -1696,11 +1619,11 @@ banco_completo_5 %>%
        title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 11, colour = "black"),
-    axis.text.y=element_text(size = 11, colour = "black"), 
+    axis.text.x=element_text(size = 11),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.1, "lines"),
     legend.position = "bottom") +
   scale_x_continuous(labels = scales::percent) +
@@ -1711,39 +1634,56 @@ banco_completo_5 %>%
 
 ```
 
-```{r media renda per capta}
+## 13. Average Per Capita Income
 
-renda_per_capta_fftp <- banco_completo_5 %>% 
+
+```{r media - renda per capta}
+
+format_real <- function(values, nsmall = 0) {
+  values %>%
+    as.numeric() %>%
+    format(nsmall = nsmall, decimal.mark = ",", big.mark = ".") %>%
+    str_trim() %>%
+    str_c("R$ ", .)
+}
+
+
+# média da taxa de ocupação  
+
+  renda_per_capta_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   summarize(media_1 = mean(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
-  pull()
+  format_real()
+ 
 
-
-renda_per_capta_geral <- banco_completo_5 %>% 
+  renda_per_capta_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
   summarize(media_1 = mean(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
-  pull()
+  format_real()
 
-
-renda_per_capta_min <- banco_completo_5 %>% 
+  renda_per_capta_min <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   summarize(media_1 = min(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
-  pull()
-
-
-renda_per_capta_max <- banco_completo_5 %>% 
+  format_real()
+  
+  renda_per_capta_max <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   summarize(media_1 = max(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
-  pull()
- 
+  format_real()
+
+
 
 ```
 
-## 14. Renda Per Capta Média
+
+The average per capita income is the average individual income of all residents of a given municipality. This data is from IBGE and refers to 2010 census.
+The average income of the municipalities that adopted Tarifa Zero is `r renda_per_capta_fftp` reais, while for the municipalities that did not adopt the policy  is  
+`r renda_per_capta_geral` reais, that is, there is a difference of just over 180 reais. The curve corresponding to municipalities with Tarifa Zero is more to the left in the graph, despite the large variation between these municipalities. The minimum average per capita income is  `r renda_per_capta_min`, in the municipality of Aquirraz in Ceará, while the maximum average per capita income is  `r renda_per_capta_max`, in the municipality of Holambra in São Paulo. 
+
 
 ```{r Renda per capta, fig.align = 'center', out.width = "75%", dpi=300}
 
@@ -1766,7 +1706,7 @@ banco_completo_5 %>%
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 12, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 12, family = "serif"),
+    axis.text.x=element_text(size = 11, family = "serif"),
     axis.text.y=element_text(size = 10, family = "serif"),
     legend.title = element_blank())+
     coord_flip()
@@ -1774,18 +1714,8 @@ banco_completo_5 %>%
 
 ```
 
+In the density graph below that compares the two groups of municipalities, the difference is very clear, the municipalities with Tarifa Zero again appear more to the right of the graph, with average income per capita, in general, higher. 
 
-A renda per capta média é o rendimento médio individual de todos os
-moradores de um determinado município. A renda média dos municípios que
-adotaram FFTP é `r renda_per_capta_fftp` reais, enquanto dos municípios
-que não adotaram a política é de `r renda_per_capta_geral` reais ou
-seja, há uma diferença de pouco mais de 180 reais.No gráfico abaixo
-podemos observar que a curva correspondentes aos municípios com FFTP
-está mais à esquerda no gráfico, apesar de grande variação entre esses
-municípios. A renda per capta média mínima é de `r renda_per_capta_min`
-reais, do município de Aquirraz no Ceará, enquando a renda per capta
-média máxima é de `r renda_per_capta_max` reais, do município de
-Holambra em São Paulo.
 
 ```{r Renda percapta média densidade, fig.align = 'center', out.width = "75%", dpi=300}
 
@@ -1802,12 +1732,12 @@ banco_completo_5 %>%
   labs(title = "") +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme_minimal()+
     theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif", size = 12),
-    axis.text.x=element_text(size = 12, colour = "black"),
-    axis.text.y=element_text(size = 12, colour = "black"), 
+    axis.text.x=element_text(size = 11),
+    axis.text.y=element_text(size = 11), 
     panel.spacing = unit(0.1, "lines"),
     legend.position = "bottom") +
   scale_x_continuous(labels = format_real)
@@ -1816,7 +1746,7 @@ banco_completo_5 %>%
 
 ```
 
-## 15. Índice de Vulnerabilidade Social (IVS)
+## 14. Social Vulnerability Index (SVI)
 
 ```{r IVS média geral}
 
@@ -1859,6 +1789,48 @@ media_ivs_urbano_2 <- banco_completo_5 %>%
 
 ```
 
+According to the Atlas of Social Vulnerability in Brazilian Municipalities, 
+published by IPEA in 2015, the Social Vulnerability Index is an index built with
+data from the 2010 Brazilian census. These are the variables used for
+the construction of the index: 
+
+**1.Urban infrastructure**: Percentage of people in households with inadequate 
+water supply and sanitation; percentage of the population living in urban 
+households without garbage collection service and percentage of people living in 
+households with a per capita income of less than half the minimum wage and who 
+spend more than an hour to work in the total number of employed vulnerable and 
+who return daily from work. 
+
+**2.Human Capital**: Mortality up to 1 year of age, Percentage of children 
+aged 0-5 years who do not attend school; percentage of people aged 6 to 14 
+who do not attend school; percentage of women aged 10 to 17 who had children; 
+percentage of mothers who are heads of households, without complete primary 
+education and with at least one child under 15 years of age, in the total 
+number of mothers who are heads of households; illiteracy rate of the population
+aged 15 and over; percentage of children living in households where none of 
+the residents have completed primary education; percentage of people aged 
+15 to 24 who do not study, do not work and have a per capita household income
+equal to or less than half the minimum wage (2010), in the total population 
+of this age group.   
+
+**3.Income and Work**: proportion of people with per capita household income 
+equal to or less than half the minimum wage (2010); unemployment rate for the 
+population aged 18 and over; percentage of people aged 18 or over without 
+complete elementary school and in informal employment; percentage of people in 
+households with per capita income below half the minimum wage
+(from 2010) and dependents of the elderly; activity rate of 10 to 14 year olds. 
+
+The index varies between 0 and 1, and the closer to 1, the greater the social 
+vulnerability of a municipality. The Atlas also indicates the following 
+classification of the values attributed by the index to each municipality: 
+
+-   Between 0 and 0.200 - very low social vulnerability,
+
+-   Between 0.201 and 0.300 - low social vulnerability,
+
+-   Between 0.301 and 0.400 - average social vulnerability,
+
+-   Between 0.401 and 0.500 - are considered to be of high social vulnerability
 
 
 ```{r  ivs tabela}
@@ -1906,90 +1878,28 @@ media_ivs_urbano_2 <- banco_completo_5 %>%
       defaultColDef = colDef(
       align = "center"),
       columns = list(
-      name = colDef("Índice de Vulnerabilidade Social", minWidth = 150),
-      Alta.x = colDef("Alta", minWidth = 70),
-      Baixa.x = colDef("Baixa", minWidth = 70),
-      Média.x = colDef("Média", minWidth = 70), 
-      `Muito Baixa.x` = colDef("Muito Baixa", minWidth = 70),
-      Alta.y = colDef("Alta", minWidth = 70),
-      Baixa.y = colDef("Baixa", minWidth = 70),
-      Média.y = colDef("Média", minWidth = 70), 
-      `Muito Baixa.y` = colDef("Muito Baixa", minWidth = 70)), 
+      name = colDef("Social Vulnerability Index", minWidth = 150),
+      Alta.x = colDef("High", minWidth = 70),
+      Baixa.x = colDef("Low", minWidth = 70),
+      Média.x = colDef("Medium", minWidth = 70), 
+      `Muito Baixa.x` = colDef("Very Low", minWidth = 70),
+      Alta.y = colDef("High", minWidth = 70),
+      Baixa.y = colDef("Low", minWidth = 70),
+      Média.y = colDef("Medium", minWidth = 70), 
+      `Muito Baixa.y` = colDef("Very Low", minWidth = 70)), 
     columnGroups = list(
-    colGroup(name = "Municípios com FFPT", columns = c("Alta.x", "Baixa.x", "Média.x", "Muito Baixa.x")),
-    colGroup(name = "Municípios sem FFPT", columns = c("Alta.y", "Baixa.y", "Média.y", "Muito Baixa.y"))))
+    colGroup(name = "Municipalities with Tarifa Zero", columns = c("Alta.x", "Baixa.x", "Média.x", "Muito Baixa.x")),
+    colGroup(name = "Municipalities without Tarifa Zero", columns = c("Alta.y", "Baixa.y", "Média.y", "Muito Baixa.y"))))
      
  
 
 ```
-Segundo o Atlas da Vulnerabilidade Social nos Municípios brasileiros,
-publicado IPEA em 2015, o Indice de Vulnerabilidade Social é um índice
-construídos com dados do censo brasileiro, que varia entre 0 e 1, sendo
-que quanto mais próximo a 1, maior é a vulnerabilidade social de um
-município. O Atlas também indica a seguinte classificação dos valores
-atribuídos pelo índice a cada município:
 
--   Entre 0 e 0,200 - muita baixa vulnerabilidade social,
-
--   Entre 0,201 e 0,300 - baixa vulnerabilidade social,
-
--   Entre 0,301 e 0,400 - média vulnerabilidade social,
-
--   Entre 0,401 e 0,500 são considerados de alta vulnerabilidade social
-
-Levando essa classificação em conta, a média dos municípios que adotaram
-a FFTP ficou em `r media_ivs_1` o que indica baixa vulneravilidade
-social. A media nos municípios que não adotaram a política ficou em
-`r media_ivs_2`, o que indica uma situação de média vulnerabilidade
-social. O primeiro grupo também apresenta um valor máximo de
-`r max_ivs_2` referente a cidade de Caucaia no Ceará, representando alta
-vulnerabilidade social, e no outro extreno o valor de
-`r min_ivs_urbano_1` na cidade de Holambra em São Paulo, correspondendo
-a muita baixa vulnerabilidade social. No gráfico abaixo podemos observar
-que os municípios com FFTP estão mais à esquerda do gráfico em relação a
-todos os outros municípios brasileiros o que indica que eles estão, em
-geral, em situção de menor vulnerabilidade social, sendo o indicador de
-infraestrutura urbana o único com bem pouca diferença entre os dois
-grupos. Comparando as médias desse último indicador temos que os
-municípios com FFTP apresentam o valor de `r media_ivs_urbano_1`,
-enquanto nos municípios que não adotaram é `r media_ivs_urbano_2`, há
-bem pouca diferença, no entanto sugere que o primeiro grupo de cidades
-tem um infraestrutura urbana melhor que o segundo grupo.
-
-```{r grafico ivs, fig.align = 'center', out.width = "70%", dpi=300}
-
-
-banco_completo_5 %>% 
-  select(- ivs_class, -ivs_infra_urbana_class, - ivs_renda_trab_class, -ivs_cap_class) %>% 
-  pivot_longer(cols = matches("ivs"))  %>% 
-  mutate(tipo = case_when(
-    name == "indice_ivs" ~ "Geral",
-    name == "ivs_infra_urbana" ~ "Infraestrutura Urbana",
-    name == "ivs_capital_humano" ~ "Capital Humano",
-    name == "ivs_renda_trabalho" ~ "Renda e Trabalho")) %>% 
-  mutate(tipo = factor(tipo, levels = c("Geral", "Infraestrutura Urbana", "Capital Humano", 
-        "Renda e Trabalho", ordered = T))) %>% 
-  ggplot() +
-  geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
-  facet_wrap(~tipo) +
-  theme(legend.position = "bottom") +
-  theme_minimal() +
-  labs(fill = "Tem Política de FFTP?",
-       title = "") +
-  xlab("") +
-  ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
-  theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
-        strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold"),
-    text = element_text(family = "serif", size = 13),
-    axis.text.x=element_text(size = 10, colour = "black"),
-    axis.text.y= element_blank(), 
-    panel.spacing = unit(0.1, "lines"),
-    legend.position = "bottom")
- 
-
-```
+Taking the IVS classification into account, the average of municipalities that adopted the Tarifa Zero was `r media_ivs_1`, 
+which indicates low social vulnerability, and the average in municipalities that did not adopt the policy was
+`r media_ivs_2`, which indicates a medium vulnerability situation. The first group also has a maximum value of
+`r max_ivs_2` referring to the city of Caucaia in Ceará, representing high social vulnerability, and at the other extreme the value
+of `r min_ivs_urbano_1` in the city of Holambra in São Paulo, corresponding to very low social vulnerability. 
 
 ```{r ivs face wrap todos, fig.align = 'center', out.width = "80%", dpi=300 }
 
@@ -1999,12 +1909,12 @@ banco_completo_5 %>%
   select(- ivs_class, -ivs_infra_urbana_class, - ivs_renda_trab_class, -ivs_cap_class) %>% 
   pivot_longer(cols = matches("ivs"))  %>% 
   mutate(name = case_when(
-    name == "indice_ivs" ~ "Geral",
-    name == "ivs_infra_urbana" ~ "Infraestrutura Urbana",
-    name == "ivs_capital_humano" ~ "Capital Humano",
-    name == "ivs_renda_trabalho" ~ "Renda e Trabalho")) %>% 
-  mutate(name = factor(name, levels = c("Geral", "Infraestrutura Urbana", "Capital Humano", 
-        "Renda e Trabalho", ordered = T))) %>% 
+    name == "indice_ivs" ~ "General",
+    name == "ivs_infra_urbana" ~ "Urban Infrastructure",
+    name == "ivs_capital_humano" ~ "Human Capital",
+    name == "ivs_renda_trabalho" ~ "Income and Work")) %>% 
+  mutate(name = factor(name, levels = c("General", "Urban Infrastructure", "Human Capital", 
+        "Income and Work", ordered = T))) %>% 
   group_by(name) %>% 
   mutate(media_nacional = mean(value)) %>% 
   mutate_if(is.character, str_to_title) %>%
@@ -2034,8 +1944,150 @@ banco_completo_5 %>%
 
 ```
 
+In the density graph below, we can see that municipalities with Tarifa Zero are more to the left of the graph in relation to all other Brazilian municipalities, which indicates that they are, in general, in a situation of less social vulnerability, with the urban infrastructure indicator being o single with very little difference between the two groups. Comparing the averages of this last indicator we have that the municipalities with Tarifa Zero have the value of `r media_ivs_urbano_1`,
+while in the municipalities that have not adopted it is `r media_ivs_urbano_2`, there is very little difference, however it suggests that the first group of cities has better urban infrastructure than the second group. 
 
-## 16. Índice de Desenvolvimento Humano (IDHM)
+
+```{r grafico ivs, fig.align = 'center', out.width = "70%", dpi=300}
+
+
+banco_completo_5 %>% 
+  select(- ivs_class, -ivs_infra_urbana_class, - ivs_renda_trab_class, -ivs_cap_class) %>% 
+  pivot_longer(cols = matches("ivs"))  %>% 
+  mutate(tipo = case_when(
+    name == "indice_ivs" ~ "General",
+    name == "ivs_infra_urbana" ~ "Urban Infrastructure",
+    name == "ivs_capital_humano" ~ "Human Capital",
+    name == "ivs_renda_trabalho" ~ "Income and Work")) %>% 
+  mutate(tipo = factor(tipo, levels = c("General", "Urban Infrastructure", "Human Capital", 
+        "Income and Work", ordered = T))) %>% 
+  ggplot() +
+  geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
+  facet_wrap(~tipo) +
+  theme(legend.position = "bottom") +
+  theme_minimal() +
+  labs(fill = "Tarifa Zero?",
+       title = "") +
+  xlab("") +
+  ylab("") +
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
+  theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
+        strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
+    strip.text.x = element_text(colour = "#303030", hjust = 0.5, family = "serif", face = "bold"),
+    text = element_text(family = "serif", size = 13),
+    axis.text.x=element_text(size = 10, colour = "black"),
+    axis.text.y= element_blank(), 
+    panel.spacing = unit(0.1, "lines"),
+    legend.position = "bottom")
+ 
+
+```
+
+
+## 15. Municipal Human Development Index (MHDI)
+
+```{r IDHM médias, echo=FALSE}
+
+# IDH dos municípios - média geral 
+
+media_idh_1 <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(idhm)) %>% round(digits = 2) %>% 
+  pull()
+
+media_idh_2 <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(idhm, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  pull()
+
+# idhm renda
+
+media_idh_renda_1 <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(idhm_r)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+media_idh_renda_2 <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(idhm_r, na.rm = TRUE)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+# IDHM Educação média
+
+media_idh_1 <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(idhm_e)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+media_idh_2 <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(idhm_e, na.rm = TRUE)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+# IDH Longevidade média
+
+media_idh_longevidade_1 <- banco_completo_5 %>% 
+  filter(tarifa_zero == "sim") %>% 
+  summarize(mean(idhm_l)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+media_idh_logenvidade_2 <- banco_completo_5 %>% 
+  filter(tarifa_zero != "sim") %>% 
+  summarize(mean(idhm_l, na.rm = TRUE)) %>% 
+  round(digits = 2) %>% 
+  pull()
+
+```
+
+"The Municipal Human Development Index" (MHDI) is a measure composed of indicators
+from three dimensions of human development:
+longevity, education and income, constructed with data from the 2010 Brazilian census.
+These are the variables used to build the index:
+
+**1.Income**: Monthly per capita income (BRL)
+
+**2.Education**: Population aged 18 or over who completed elementary school (%);
+population aged 5 to 6 years attending school (%); 11 to 13 year old population
+attending the final years of elementary school (%); Population 15 to 17 years old with the
+complete primary education (%); population from 18 to 20 years of age with complete 
+secondary education (%)
+
+**3.Longevity**: Life expectancy at birth (years) 
+
+The index ranges from 0 to 1. The closer to 1, the greater the human development.” (UNDP, 2021).
+Below is the classification:
+
+-   Between 0 and 0.499 - very low
+
+-   Between 0.500 and 0.599 - low
+
+-   Between 0.600 and 0.699 - medium
+
+-   Between 0.700 and 0.799 - high
+
+-   Between 0.800 and 1 - very high 
+
+
+The average MHDI of the studied municipalities is `r media_idh_1`, which indicates "high" MHDI, while the
+average in Brazilian municipalities that have not adopted the policy is
+`r media_idh_2`, which indicates MHDI "medium". The average of the MHDI Income 
+of the studied municipalities is of `r media_idh_renda_1`, that is, "high", while 
+the average in Brazilian municipalities that have not adopted the policy is `r media_idh_renda_2`, the medium.
+In fact, when we look at the distribution of values in the graph of
+density, we noticed that the municipalities that adopted Tarifa Zero present
+values closer to 1, being  more to the left of the graphic. The average of the MHDI Education of municipalities with Tarifa Zero is `r media_idh_1`
+while the average in Brazilian municipalities that have not adopted the policy
+is `r media_idh_2`. So, as in the density graph of the general MHDI and MHDI income, the
+municipalities with Tarifa Zero have values closer to 1 and more to the left of the
+density graph. Finally, the average of the MHDI longevity of the studied municipalities is of
+`r media_idh_longevidade_1` while the average in Brazilian municipalities
+that have not adopted the policy is `r media_idh_logenvidade_2`. There is just a small
+difference between the two groups, which are in the same "very high" MHDI group. 
 
 ```{r tabela idhm}
 
@@ -2084,97 +2136,24 @@ banco_completo_5 %>%
       defaultColDef = colDef(
       align = "center"),
       columns = list(
-      name = colDef("Índice de Desenvolvimento Humano", minWidth = 140),
-      Alto.x = colDef("Alta", minWidth = 70),
-      Baixo.x = colDef("Baixa", minWidth = 70),
-      Médio.x = colDef("Média", minWidth = 70), 
-      `Muito Alto.x` = colDef("Muito Alto", minWidth = 70),
-      Alto.y = colDef("Alta", minWidth = 70),
-      Baixo.y = colDef("Baixa", minWidth = 70),
-      Médio.y = colDef("Média", minWidth = 70), 
-      `Muito Alto.y` = colDef("Muito Alto", minWidth = 70),
-      `Muito Baixo` = colDef("Muito Baixa", minWidth = 70)), 
+      name = colDef("Municipal Human development Index", minWidth = 140),
+      Alto.x = colDef("High", minWidth = 70),
+      Baixo.x = colDef("Low", minWidth = 70),
+      Médio.x = colDef("Medium", minWidth = 70), 
+      `Muito Alto.x` = colDef("Very High", minWidth = 70),
+      Alto.y = colDef("High", minWidth = 70),
+      Baixo.y = colDef("Low", minWidth = 70),
+      Médio.y = colDef("Medium", minWidth = 70), 
+      `Muito Alto.y` = colDef("Very High", minWidth = 70),
+      `Muito Baixo` = colDef("Very Low", minWidth = 70)), 
     columnGroups = list(
-    colGroup(name = "Municípios com Tarifa Zero", columns = c("Alto.x", "Baixo.x", "Médio.x", "Muito Alto.x")),
-    colGroup(name = "Municípios sem Tarifa Zero", columns = c("Alto.y", "Baixo.y", "Médio.y", "Muito Baixo","Muito Alto.y"))))
+    colGroup(name = "Municipalities with Tarifa Zero", columns = c("Alto.x", "Baixo.x", "Médio.x", "Muito Alto.x")),
+    colGroup(name = "Municipalities without Tarifa Zero", columns = c("Alto.y", "Baixo.y", "Médio.y", "Muito Baixo","Muito Alto.y"))))
      
 
 ```
 
-
-```{r IDHM média geral,  echo=FALSE}
-
-# IDH dos municípios - média 
-
-media_idh_1 <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm)) %>% round(digits = 2) %>% 
-  pull()
-
-media_idh_2 <- banco_completo_5 %>% 
-  filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm, na.rm = TRUE)) %>% round(digits = 2) %>% 
-  pull()
-```
-
-"O Índice de Desenvolvimento Humano Municipal (IDHM) é uma medida
-composta de indicadores de três dimensões do desenvolvimento humano:
-longevidade, educação e renda. O índice varia de 0 a 1. Quanto mais
-próximo de 1, maior o desenvolvimento humano."(PNUD,2021). Segue a classificação:
-
--   Entre 0 e 0,499 - muito baixo
-
--   Entre 0,500 e 0,599 - baixo
-
--   Entre 0,600 e 0,699 - médio
-
--   Entre 0,700 e 0,799 - alto
-
--   Entre 0,800 e 1 - muito alto
-
-
-O IDHM médio dos municípios estudados é de `r media_idh_1`, o que indica idhm "alto", enquanto a
-média nos municípios brasileiros que não adotaram a política é
-`r media_idh_2`, o que indica idhm "médio". Olhando para a distribuição dos valores para os dois
-grupos de municípios podemos perceber que os municípios que adotaram a
-política possuem valores de IDHM ligeiramente maiores.
-
-
-```{r Grafico IDHM, fig.align = 'center', out.width = "70%", dpi=300}
-
-# gráfico IDHM
-
-banco_completo_5 %>% 
-  select(- idhm_class, - idhm_e_class, - idhm_l_class, -idhm_r_class) %>% 
-  pivot_longer(starts_with("idhm")) %>% 
-  mutate(tipo = case_when(
-    name == "idhm" ~ "Geral",
-    name == "idhm_e" ~ "Educação",
-    name == "idhm_l" ~ "Longevidade",
-    name == "idhm_r" ~ "Renda")) %>% 
-  mutate(tipo = factor(tipo, levels = c("Geral", "Educação", "Renda", 
-        "Longevidade", ordered = T))) %>% 
-  ggplot() +
-  geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
-  facet_wrap(~tipo) +
-  theme(legend.position = "bottom") +
-  theme_minimal() +
-  labs(fill = "Tem Política de FFTP?",
-       title = "") +
-  xlab("") +
-  ylab("") +
-  scale_fill_manual(name = "Tem Política de FFTP?", values = c("#00688b", "#954182"), labels = c("Não", "Sim"))+
-  theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
-    text = element_text(family = "serif", size = 13),
-    strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
-    strip.text.x = element_text(colour = "#303030", face = "bold", hjust = 0.5, family = "serif"),
-    axis.text.x=element_text(size = 10, colour = "black"),
-    axis.text.y= element_blank(), 
-    panel.spacing = unit(0.1, "lines"),
-    legend.position = "bottom")
-
-```
-
+Regarding the MHDI indicators: income, education and longevity, we can say that, in terms of income and education, the municipalities that adopted the Tarifa Zero have a difference of 7 points more in the average values of the indicator in relation to municipalities without this policy. Regarding longevity, the averages show practically similar values. 
 
 ```{r idhm face wrap todos, fig.align = 'center', out.width = "80%", dpi=300 }
 
@@ -2184,12 +2163,12 @@ banco_completo_5 %>%
   select(- idhm_class, - idhm_e_class, - idhm_l_class, -idhm_r_class) %>% 
   pivot_longer(starts_with("idhm")) %>% 
   mutate(name = case_when(
-    name == "idhm" ~ "Geral",
-    name == "idhm_e" ~ "Educação",
-    name == "idhm_l" ~ "Longevidade",
-    name == "idhm_r" ~ "Renda")) %>% 
-  mutate(name = factor(name, levels = c("Geral", "Educação", "Renda", 
-        "Longevidade", ordered = T))) %>% 
+    name == "idhm" ~ "Gerneral",
+    name == "idhm_e" ~ "Education",
+    name == "idhm_l" ~ "Longevity",
+    name == "idhm_r" ~ "Income")) %>% 
+  mutate(name = factor(name, levels = c("Gerneral", "Education", "Income", 
+        "Longevity", ordered = T))) %>% 
   group_by(name) %>% 
   mutate(media_nacional = mean(value)) %>% 
   mutate_if(is.character, str_to_title) %>%
@@ -2203,7 +2182,7 @@ banco_completo_5 %>%
   theme(legend.position = "bottom") +
   theme_bw() +
   labs(fill = "UF",
-       title = "Índice de Desenolvimento Humano") +
+       title = "") +
   xlab("") +
   ylab("") +
   scale_fill_brewer(name = "UF", palette = "Set2") +
@@ -2219,97 +2198,85 @@ banco_completo_5 %>%
 
 ```
 
+Looking at the distribution of values for the two groups of municipalities we can see that the municipalities that adopted the policy have slightly higher MHDI values. 
 
-```{r IDHM Renda dos municípios, echo=FALSE, fig.align = 'center', out.width = "80%", dpi=300}
 
-# IDHM  Renda dos municípios (média) 
+```{r Grafico IDHM, fig.align = 'center', out.width = "70%", dpi=300}
 
-media_idh_renda_1 <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_r)) %>% 
-  round(digits = 2) %>% 
-  pull()
+# gráfico IDHM
 
-media_idh_renda_2 <- banco_completo_5 %>% 
-  filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_r, na.rm = TRUE)) %>% 
-  round(digits = 2) %>% 
-  pull()
+banco_completo_5 %>% 
+  select(- idhm_class, - idhm_e_class, - idhm_l_class, -idhm_r_class) %>% 
+  pivot_longer(starts_with("idhm")) %>% 
+  mutate(tipo = case_when(
+    name == "idhm" ~ "General",
+    name == "idhm_e" ~ "Education",
+    name == "idhm_l" ~ "Longevity",
+    name == "idhm_r" ~ "Income")) %>% 
+  mutate(tipo = factor(tipo, levels = c("General", "Education", "Income", 
+        "Longevity", ordered = T))) %>% 
+  ggplot() +
+  geom_density(aes(value, fill=tarifa_zero), alpha = 0.5) +
+  facet_wrap(~tipo) +
+  theme(legend.position = "bottom") +
+  theme_minimal() +
+  labs(fill = "Tem Política de FFTP?",
+       title = "") +
+  xlab("") +
+  ylab("") +
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
+  theme(plot.title = element_text(family = "serif", size = 13, face = "bold", hjust = 0.5, colour = "black"),
+    text = element_text(family = "serif", size = 13),
+    strip.background = element_rect(colour = "white", fill = "#b9a6b3"),
+    strip.text.x = element_text(colour = "#303030", face = "bold", hjust = 0.5, family = "serif"),
+    axis.text.x=element_text(size = 10, colour = "black"),
+    axis.text.y= element_blank(), 
+    panel.spacing = unit(0.1, "lines"),
+    legend.position = "bottom")
+
+```
+
+## 16. Social Prosperity
+
+Social Prosperity is an index produced by IPEA and is detailed in the "Atlas of Social Vulnerability of Brazilian Municipalities" (2015), in it we can 
+find the following definition: "The integrated analysis of human development with social vulnerability offers what is called here social prosperity. Social prosperity is the simultaneous occurrence of high human development with low social vulnerability, suggesting that in portions of the territory where it takes place, there is a less vulnerable and socially more prosperous human development trajectory. Social prosperity, in this sense, reflects a situation in which human development rests on more robust social bases, where family and school capital, conditions for insertion in the world of work and housing conditions and access to infrastructure urban population are such that there is a perspective of prosperity not only economic, but of living conditions in the social environment." p.74. 
+
+The graph below compares social prosperity in two groups, again the municipalities that adopted the Tarifa Zero (in blue) and those who did not adopt (in purple). In this comparison, we can see that the first group has better levels of social prosperity, with 83% of them concentrated in the High and Very High levels of social prosperity. 
+
+```{r Prosperidade Social , fig.align = 'center', out.width = "75%", dpi=300}
+
+  banco_completo_5  %>% 
+  mutate(tarifa_zero = case_when(tarifa_zero == "sim" ~ "Municípios com Tarifa Zero", 
+                                 tarifa_zero == "não"~ "Municípios sem Tarifa Zero", TRUE ~ tarifa_zero)) %>% 
+  mutate(prosperidade_social = factor(prosperidade_social, levels = c("Muito Alto", "Alto", "Médio", 
+        "Baixo", "Muito Baixo", ordered = T))) %>% 
+  group_by(tarifa_zero, prosperidade_social) %>% 
+  tally() %>% 
+  mutate(pct_prosperidade = n/sum(n)) %>% 
+  ggplot(aes(x = prosperidade_social, y = pct_prosperidade, fill = tarifa_zero)) + 
+  geom_col(width = 0.95, position = "fill", alpha = 0.70) +
+  xlab("") +
+  ylab("") +
+  ggtitle("") +
+  scale_y_continuous(labels = scales::percent) + 
+  scale_fill_manual(name = "", values = c("#00688b", "#954182"), labels = c("Municipalities with Tarifa Zero", "Municipalities without Tarifa Zero")) + 
+  geom_label(aes(x = prosperidade_social, y = pct_prosperidade, group = tarifa_zero, label = scales::percent(pct_prosperidade, accuracy = 1)), 
+             position = position_fill(vjust = 0.5),family = "serif", fill = "beige", color = "gray22") +
+  theme_minimal() + 
+    theme(plot.title = element_text(family = "serif", size = 16, face = "bold", hjust = 0.5, colour = "black"),
+   strip.background = element_rect(colour = "white", fill = "palevioletred"),
+    strip.text.x = element_text(colour = "black", hjust = 0.5, family = "serif"),
+    text = element_text(size = 14, family = "serif", colour = "gray22"),
+    axis.text.x=element_text(size = 11, family = "serif"),
+    axis.text.y=element_text(size = 11, family = "serif"),
+    legend.title = element_blank(),
+    legend.position = "bottom")
 
 
 
 ```
 
-A média do IDHM Renda dos municípios estudados é de
-`r media_idh_renda_1`, ou seja, "alto", enquanto a média nos municípios brasileiros que
-não adotaram a política é `r media_idh_renda_2`, ou seja, médio.
-De fato, quando olhamos para a distribuição dos valores no gráfico de
-densidade, percebemos que os municípios que adotaram FFTP apresentam
-valores mais próximos de 1, estando inclinados mais à esquerda do
-gráfico.
-
-```{r IDH Educação, echo=FALSE, fig.align = 'center', out.width = "80%", dpi=300}
-
-# IDHM Educação média
-
-media_idh_1 <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_e)) %>% 
-  round(digits = 2) %>% 
-  pull()
-
-media_idh_2 <- banco_completo_5 %>% 
-  filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_e, na.rm = TRUE)) %>% 
-  round(digits = 2) %>% 
-  pull()
-
-##
-
-```
-
-A média do IDHM Educação dos municípios com FFTP é de `r media_idh_1`
-enquanto a média nos municípios brasileiros que não adotaram a política
-é `r media_idh_2`. Assim, como no gráfico de densidade do IDHM geral e IDHM renda, os
-municípios com FFTP apresentam valores mais próximos de 1 e mais à esquerda do
-gráfico de densidade. 
-
-```{r IDHM Educação, echo=FALSE, fig.align = 'center', out.width = "50%", dpi=300}
-
-# IDH Longevidade média
-
-media_idh_longevidade_1 <- banco_completo_5 %>% 
-  filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_l)) %>% 
-  round(digits = 2) %>% 
-  pull()
-
-media_idh_logenvidade_2 <- banco_completo_5 %>% 
-  filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_l, na.rm = TRUE)) %>% 
-  round(digits = 2) %>% 
-  pull()
-
-
-```
-
-Por fim, a média do IDHM longevidade dos municípios estudados é de
-`r media_idh_longevidade_1` enquanto a média nos municípios brasileiros
-que não adotaram a política é `r media_idh_logenvidade_2`.Aqui há apenas uma pequena 
-diferença entre os dois grupos, 
-que estão no mesmo grupo de idhm "muito alto". 
-
-A respeito dos indicadores de IDHM: renda, educação e longevidade,
-podemos dizer que, em termos de renda e educação, os municípios
-que adotaram o FFTP tem uma diferença de 7 pontos a mais na média de
-valores do indicador em relação aos municípios sem essa política. Em
-relação a longevidade, as médias apresentam valores praticamente semelhantes.
-
-## 17. Motivação dos governos
-
-
-
-## 18. Movimentos Sociais e Tarifa Zero
+## 17. Social Movements and Tarifa Zero
 
 ```{r banco passe livre}
 
@@ -2382,7 +2349,7 @@ banco_completo_6 <- banco_completo_5 %>%
 
 ```
 
-```{r mapa mov. sociais plot, fig.align = 'center', out.width = "80%", dpi=300}
+```{r mapa mov. sociais plot, fig.align = 'center', out.width = "150%", dpi=300}
 
 
 # gráfico de mapa colocando os municípios dentro de seus respectivos estados: 
@@ -2391,22 +2358,22 @@ banco_completo_6 <- banco_completo_5 %>%
   st_as_sf(coords=c("geom")) %>%
   ggplot() +
   geom_sf(aes(geometry = geom), color = "gray", fill = "seashell2")  +
-  geom_sf(data=muni_geobr_4, aes(fill = "Cidades com Tarifa Zero"), shape = 21,
+  geom_sf(data=muni_geobr_4, aes(fill = "Cities with Tarifa Zero's policy"), shape = 21,
           color = "white",
-          size = 4,
+          size = 3,
           show.legend = T, 
           alpha = 0.8) +
-  geom_sf(data= muni_geobr_5, aes(fill = "Cidades com Movimento Passe Livre"), shape = 21,
+  geom_sf(data= muni_geobr_5, aes(fill = "Cities with Passe Livre Movement"), shape = 21,
           color = "white",
-          size = 4,
+          size = 3,
           show.legend = T,
           alpha = 0.8) +
-  geom_sf(data= muni_geobr_6, aes(fill = "Cidades com Movimento Tarifa Zero"), shape = 21,
+  geom_sf(data= muni_geobr_6, aes(fill = "Cities with Tarifa Zero Movement"), shape = 21,
           color = "white",
-          size = 4,
+          size = 3,
           show.legend = T,
           alpha = 0.8) + 
-  theme_minimal() + 
+  theme_void() + 
   labs(fill = "",
        title = "", 
        caption = "")+
