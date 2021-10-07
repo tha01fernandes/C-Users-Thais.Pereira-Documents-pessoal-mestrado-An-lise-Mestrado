@@ -155,6 +155,7 @@ banco_completo <- pnud_muni %>%
                                  CodMun == 2301000~ "sim" ,
                                  CodMun == 3532009~ "sim", 
                                  CodMun == 5208004~ "sim", 
+                                 CodMun == 3306305~"sim",
                                  CodMun == 3110004~ "sim", TRUE ~ "não")) %>% 
   mutate(tarifa_zero = case_when(CodMun == 3172202~ "não", TRUE ~ tarifa_zero)) %>% 
   left_join(munic_pop, by = "CodMun") %>% 
@@ -185,10 +186,10 @@ ano_implementacao <- tibble(CodMun=c(3100203, 3500709, 5201306, 2301000,
                       3104106, 5202502, 3111200, 3511508, 
                       3116605, 3514304, 2304285, 4107603, 3519055,3133709, 
                       4111506, 3528007, 3302700, 3143104, 3532009,3144102,4314209, 
-                      3539103,4119608, 3540804,3305604, 3556453,4128500, 5208004, 3110004,2303709),
+                      3539103,4119608, 3540804,3305604, 3556453,4128500, 5208004, 3110004,2303709, 3306305),
        ano_implementacao=c(1997, 2003, 2014, 2018, 2019, 2008, 2019, 2020, 2021, 
-             2014, 2010, 2001, 2010, 2015, 2001, 2004, 2013, 1994,2019,2011,2018,2020, 2012, 1998, 2014,2019, 2008, 2021, 2021, 2021), 
-       ano_implemen_resumido=c("Até anos 2000", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2001 e 2009", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2010 e 2015", "Entre 2010 e 2015", "Entre 2001 e 2009", "Entre 2001 e 2009", "Entre 2010 e 2015", "Até anos 2000", "Entre 2016 e 2021", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2016 e 2021", "Entre 2010 e 2015", "Até anos 2000", "Entre 2010 e 2015", "Entre 2016 e 2021", "Entre 2001 e 2009", "Entre 2016 e 2021", "Entre 2016 e 2021","Entre 2016 e 2021"))
+             2014, 2010, 2001, 2010, 2015, 2001, 2004, 2013, 1994,2019,2011,2018,2020, 2012, 1998, 2014,2019, 2008, 2021, 2021, 2021, 2018), 
+       ano_implemen_resumido=c("Until 2000s", "Between 2001 and 2009", "Between 2010 and 2015", "Between 2016 and 2021", "Between 2016 and 2021", "Between 2001 and 2009", "Between 2016 and 2021", "Between 2016 and 2021", "Between 2016 and 2021", "Between 2010 and 2015", "Between 2010 and 2015", "Between 2001 and 2009", "Between 2010 and 2015", "Between 2010 and 2015", "Between 2001 and 2009", "Between 2001 and 2009", "Between 2010 and 2015", "Until 2000s", "Between 2016 and 2021", "Between 2010 and 2015", "Between 2016 and 2021", "Between 2016 and 2021", "Between 2010 and 2015", "Until 2000s", "Between 2010 and 2015", "Between 2016 and 2021", "Between 2001 and 2009", "Between 2016 and 2021", "Between 2016 and 2021","Between 2016 and 2021","Between 2016 and 2021"))
 
 banco_completo_1 <- banco_completo %>% 
   left_join(ano_implementacao, by = "CodMun")
@@ -316,42 +317,42 @@ banco_completo_2 <- banco_completo_1 %>%
        ano_elaboracao,
        `Aprovado em lei ou ato normativo`,
        `Instrumento Legal`, `Nº da Lei`)  %>% 
-  mutate(idhm_class = case_when(idhm > 0 & idhm <= 0.499 ~ "Muito Baixo", 
-                                        idhm  >= 0.500 & idhm <= 0.599 ~ "Baixo", 
-                                        idhm  >= 0.600 & idhm <= 0.699 ~ "Médio", 
-                                        idhm  >= 0.700 & idhm <= 0.799 ~"Alto", 
-                                        idhm  >= 0.800 ~ "Muito Alto", TRUE ~ "idhm")) %>% 
-  mutate(idhm_r_class = case_when(idhm_r > 0 & idhm_r <= 0.499 ~ "Muito Baixo", 
-                                        idhm_r  >= 0.500 & idhm_r <= 0.599 ~ "Baixo", 
-                                        idhm_r  >= 0.600 & idhm_r <= 0.699 ~ "Médio", 
-                                        idhm_r  >= 0.700 & idhm_r <= 0.799 ~"Alto", 
-                                        idhm_r  >= 0.800 ~ "Muito Alto", TRUE ~ "idhm")) %>% 
-  mutate(idhm_e_class = case_when(idhm_e > 0 & idhm_e <= 0.499 ~ "Muito Baixo", 
-                                        idhm_e  >= 0.500 & idhm_e <= 0.599 ~ "Baixo", 
-                                        idhm_e  >= 0.600 & idhm_e <= 0.699 ~ "Médio", 
-                                        idhm_e  >= 0.700 & idhm_e <= 0.799 ~"Alto", 
-                                        idhm_e  >= 0.800 ~ "Muito Alto", TRUE ~ "idhm")) %>% 
-  mutate(idhm_l_class = case_when(idhm_l > 0 & idhm_l <= 0.499 ~ "Muito Baixo", 
-                                        idhm_l  >= 0.500 & idhm_l <= 0.599 ~ "Baixo", 
-                                        idhm_l  >= 0.600 & idhm_l <= 0.699 ~ "Médio", 
-                                        idhm_l  >= 0.700 & idhm_l <= 0.799 ~"Alto", 
-                                        idhm_l  >= 0.800 ~ "Muito Alto", TRUE ~ "idhm")) %>% 
-   mutate(ivs_class = case_when(indice_ivs >= 0 & indice_ivs <= 0.200 ~ "Muito Baixa", 
-                                         indice_ivs  >= 0.201 & indice_ivs <= 0.300 ~ "Baixa", 
-                                         indice_ivs  >= 0.301 & indice_ivs <= 0.400 ~ "Média", 
-                                         indice_ivs  >= 0.401 ~"Alta", TRUE ~ "indice_ivs")) %>% 
-   mutate(ivs_infra_urbana_class = case_when(ivs_infra_urbana >= 0 & ivs_infra_urbana <= 0.200 ~ "Muito Baixa", 
-                                        ivs_infra_urbana  >= 0.201 & ivs_infra_urbana <= 0.300 ~ "Baixa", 
-                                        ivs_infra_urbana  >= 0.301 & ivs_infra_urbana <= 0.400 ~ "Média", 
-                                        ivs_infra_urbana  >= 0.401 ~"Alta",  TRUE ~ "indice_ivs")) %>% 
-  mutate(ivs_renda_trab_class = case_when(ivs_renda_trabalho >= 0 & ivs_renda_trabalho <= 0.200 ~ "Muito Baixa", 
-                                       ivs_renda_trabalho  >= 0.201 & ivs_renda_trabalho <= 0.300 ~ "Baixa", 
-                                       ivs_renda_trabalho  >= 0.301 & ivs_renda_trabalho <= 0.400 ~ "Média", 
-                                       ivs_renda_trabalho  >= 0.401 ~"Alta",  TRUE ~ "indice_ivs")) %>% 
-  mutate(ivs_cap_class = case_when(ivs_capital_humano >= 0 & ivs_capital_humano <= 0.200 ~ "Muito Baixa", 
-                                       ivs_capital_humano  >= 0.201 & ivs_capital_humano <= 0.300 ~ "Baixa", 
-                                       ivs_capital_humano  >= 0.301 & ivs_capital_humano <= 0.400 ~ "Média", 
-                                       ivs_capital_humano  >= 0.401 ~"Alta", TRUE ~ "indice_ivs")) %>% 
+  mutate(idhm_class = case_when(idhm > 0 & idhm <= 0.499 ~ "Very Low", 
+                                        idhm  >= 0.500 & idhm <= 0.599 ~ "Low", 
+                                        idhm  >= 0.600 & idhm <= 0.699 ~ "Medium", 
+                                        idhm  >= 0.700 & idhm <= 0.799 ~"High", 
+                                        idhm  >= 0.800 ~ "Very High", TRUE ~ "idhm")) %>% 
+  mutate(idhm_r_class = case_when(idhm_r > 0 & idhm_r <= 0.499 ~ "Very Low", 
+                                        idhm_r  >= 0.500 & idhm_r <= 0.599 ~ "Low", 
+                                        idhm_r  >= 0.600 & idhm_r <= 0.699 ~ "Medium", 
+                                        idhm_r  >= 0.700 & idhm_r <= 0.799 ~"High", 
+                                        idhm_r  >= 0.800 ~ "Very High", TRUE ~ "idhm")) %>% 
+  mutate(idhm_e_class = case_when(idhm_e > 0 & idhm_e <= 0.499 ~ "Very Low", 
+                                        idhm_e  >= 0.500 & idhm_e <= 0.599 ~ "Low", 
+                                        idhm_e  >= 0.600 & idhm_e <= 0.699 ~ "Medium", 
+                                        idhm_e  >= 0.700 & idhm_e <= 0.799 ~"High", 
+                                        idhm_e  >= 0.800 ~ "Very High", TRUE ~ "idhm")) %>% 
+  mutate(idhm_l_class = case_when(idhm_l > 0 & idhm_l <= 0.499 ~ "Very Low", 
+                                        idhm_l  >= 0.500 & idhm_l <= 0.599 ~ "Low", 
+                                        idhm_l  >= 0.600 & idhm_l <= 0.699 ~ "Medium", 
+                                        idhm_l  >= 0.700 & idhm_l <= 0.799 ~"High", 
+                                        idhm_l  >= 0.800 ~ "Very High", TRUE ~ "idhm")) %>% 
+  mutate(ivs_class = case_when(indice_ivs >= 0 & indice_ivs <= 0.200 ~ "Very Low", 
+                                         indice_ivs  >= 0.201 & indice_ivs <= 0.300 ~ "Low", 
+                                         indice_ivs  >= 0.301 & indice_ivs <= 0.400 ~ "Medium", 
+                                         indice_ivs  >= 0.401 ~"High", TRUE ~ "indice_ivs")) %>% 
+   mutate(ivs_infra_urbana_class = case_when(ivs_infra_urbana >= 0 & ivs_infra_urbana <= 0.200 ~ "Very Low", 
+                                        ivs_infra_urbana  >= 0.201 & ivs_infra_urbana <= 0.300 ~ "Low", 
+                                        ivs_infra_urbana  >= 0.301 & ivs_infra_urbana <= 0.400 ~ "Medium", 
+                                        ivs_infra_urbana  >= 0.401 ~"High",  TRUE ~ "indice_ivs")) %>% 
+  mutate(ivs_renda_trab_class = case_when(ivs_renda_trabalho >= 0 & ivs_renda_trabalho <= 0.200 ~ "Very Low", 
+                                       ivs_renda_trabalho  >= 0.201 & ivs_renda_trabalho <= 0.300 ~ "Low", 
+                                       ivs_renda_trabalho  >= 0.301 & ivs_renda_trabalho <= 0.400 ~ "Medium", 
+                                       ivs_renda_trabalho  >= 0.401 ~"High",  TRUE ~ "indice_ivs")) %>% 
+  mutate(ivs_cap_class = case_when(ivs_capital_humano >= 0 & ivs_capital_humano <= 0.200 ~ "Very Low", 
+                                       ivs_capital_humano  >= 0.201 & ivs_capital_humano <= 0.300 ~ "Low", 
+                                       ivs_capital_humano  >= 0.301 & ivs_capital_humano <= 0.400 ~ "Medium", 
+                                       ivs_capital_humano  >= 0.401 ~"High", TRUE ~ "indice_ivs")) %>% 
   mutate(taxa_pop_vulneravel_retorna_diariamente_trabalho = pop_vulneravel_retorna_diariamente_trabalho/pop_estimada_2019)
 
 
@@ -365,7 +366,7 @@ banco_completo_5[21:30] <- lapply(banco_completo_5[21:30], as.numeric)
 
 ## Abstract
 
-This report analyse data from 30 Brazilian cities that have adopted the full fare exemption on public transport, more popularly known in Brazil as the "Tarifa Zero", a term that will be used in this report to refer to the policy. For the selection of cases, two criteria were used: i. The policy was implemented in all transport networks in the city; ii. It is available to all users. We intend to present an exploratory analysis of public data about the studied municipalities and characterize them by checking if there is homogeneity in their economic and social characteristics, in addition to comparing them with all others that have not adopted the policy, with the objective to understand the differences and disparities between the two groups of cities.  
+This report analyse data from 31 Brazilian cities that have adopted the full fare exemption on public transport, more popularly known in Brazil as the "Tarifa Zero", a term that will be used in this report to refer to this policy. For the selection of cases, two criteria were used: i. The policy was implemented in all transport networks in the city; ii. It is available to all users. We intend to present an exploratory analysis of public data about the studied municipalities and characterize them by checking if there is homogeneity in their economic and social characteristics, in addition to comparing them with all others that have not adopted the policy, with the objective to understand the differences and disparities between the two groups of cities.  
 
 
 ## 1. Data base
@@ -565,7 +566,7 @@ however, the northeast only has 2 municipalities with Tarifa Zero.
 
 ```
 
-In the table below we can see that among 27 Brazilian states, seven have a municipality that has implemented FFPT. Minas Gerais is the state with the most municipalities in Brazil but the second with the most cities with Tarifa Zero, and São Paulo is the second with the most municipalities and yet the state with the most cities that have adopted the policy.
+In the table below we can see that among 27 Brazilian states, seven have a municipality that has implemented Tarifa Zero. Minas Gerais is the state with the most municipalities in Brazil but the second with the most cities with Tarifa Zero, and São Paulo is the second with the most municipalities and yet the state with the most cities that have adopted the policy.
 
 ```{r UF dos municípios, fig.align = 'center', out.width = "50%"}
 
@@ -679,7 +680,7 @@ max_pop_geral <- banco_completo_5 %>%
 In the graph below, we can see the estimated population of 2019 by the IBGE for all cities that adopted the Tarifa Zero, together with the national average (vertical line). The population average of the municipalities with the Zero Tariff is `r media_pop_ffpt` thousand inhabitants, with very different amounts, we have a maximum of `r max_pop_ffpt` as is the case of Caucaia in Ceará, and a minimum of `r min_pop_ffpt` inhabitants in Pedro Osório in Rio Grande do Sul (IBGE, 2019). In municipalities that have not adopted the policy, the population average is `r media_pop_geral`, but also with very different values, reaching a maximum of `r max_pop_geral` thousand inhabitants, as is the case of the city of São Paulo. In the chart below, it is possible to compare the municipalities with the Tarifa Zero against each other: 
    
 
-```{r fig.align = 'center', out.width = "80%", dpi=300}
+```{r, fig.align = 'center', out.width = "80%", dpi=300}
 
 
 
@@ -723,6 +724,42 @@ banco_completo_5 %>%
 
 ```
 
+In the density graph below, we selected only municipalities with less than 250 thousand inhabitants, which corresponds to 97% of Brazilian municipalities, so that the graph would be easier to visualize, in it we can observe the population distribution in the municipalities.  
+
+```{r gráfico de densidade da pop, fig.align = 'center', out.width = "70%", dpi=300}
+
+## formatação em milhar: 
+
+format_milhar <- function(values, nsmall = 0) {
+  values %>%
+    as.numeric() %>%
+    format(nsmall = nsmall, decimal.mark = ",", big.mark = ".") %>%
+    str_trim() %>%
+    str_c("", .)
+}
+
+## gráfico: 
+
+  banco_completo_5 %>%
+  filter(pop_estimada_2019 < 250000) %>% 
+  ggplot()+
+  geom_density(aes(x = pop_estimada_2019, fill = tarifa_zero),  colour="black", alpha = 0.6) +
+  labs(title = "") +
+  xlab("") +
+  ylab("") +
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
+  theme_minimal()+
+    theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
+    text = element_text(family = "serif", size = 12),
+    axis.text.x=element_text(size = 10),
+    axis.text.y=element_text(size = 10), 
+    panel.spacing = unit(0.1, "lines"),
+    legend.position = "bottom") +
+    scale_x_continuous(labels = format_milhar)
+
+```
+
+
 ## 4. Year of Implementation 
 
 From the graph below, we can see that 70% of the municipalities that adopted Tarifa Zero did so after 2010,
@@ -739,6 +776,10 @@ Caucaia in Ceará, Caeté and Cláudio in Minhas Gerais and Formosa in Goiania.
 
   banco_completo_5  %>% 
   filter(tarifa_zero == "sim") %>% 
+  mutate(ano_implemen_resumido = factor(ano_implemen_resumido, levels = c("Until 2000s", 
+                                                                          "Between 2001 and 2009", 
+                                                                          "Between 2010 and 2015", 
+                                                                          "Between 2016 and 2021", ordered = T))) %>% 
   group_by(ano_implemen_resumido) %>% 
   tally() %>% 
   mutate(pct = n/sum(n)) %>% 
@@ -753,10 +794,9 @@ Caucaia in Ceará, Caeté and Cláudio in Minhas Gerais and Formosa in Goiania.
   theme_minimal() + 
     theme(plot.title = element_text(family = "serif", size = 16, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
-    axis.text.x=element_text(size = 13, family = "serif"),
-    axis.text.y=element_text(size = 13, family = "serif"),
+    axis.text.x=element_text(size = 10.5, family = "serif"),
+    axis.text.y=element_text(size = 12, family = "serif"),
     legend.title = element_blank())
-
 
 ```
 
@@ -938,19 +978,20 @@ periodic review of the plan. According to a survey by the Ministry of
 Cities in 2016, out of a total of 5,569 Brazilian municipalities, 60% meet the 
 established criteria by the City Statute and the Law
 Mobility, and should therefore develop the plan. Of the municipalities with
-Tarifa Zero only 18 have an obligation to develop master plan. In this
+Tarifa Zero only 20 have an obligation to develop master plan. In this
 analysis we considered only the municipalities that in the survey of
 National Secretariat of Mobility and Urban Services (SEMOB) responded
 "yes" or "no" to the question about the execution of the mobility plan
-urban, not considering the cities that did not respond. 
+urban, not considering the cities that did not respond. Just 13 cities with Tarifa Zero answered yes or no.
+
 
 
 ```{r Plano de Mobilidade Urbana}
 
 # Tabela plano de mobilidade urbana 1 
 
-   banco_completo_5$plano_mob <- trimws( banco_completo_5$plano_mob)
-   banco_completo_5$classe_pop <- trimws( banco_completo_5$classe_pop) # não estava conseguindo filtrar essas variáveis e descobri que o problema eram os espaços 
+   banco_completo_5$plano_mob <- trimws(banco_completo_5$plano_mob)
+   banco_completo_5$classe_pop <- trimws(banco_completo_5$classe_pop) # não estava conseguindo filtrar essas variáveis e descobri que o problema eram os espaços 
 
 plano_mob_2 <- banco_completo_5  %>%
    mutate(plano_mob =case_when(plano_mob =="SIM" ~"Sim",
@@ -988,10 +1029,9 @@ plano_mob_3 <- banco_completo_5  %>%
 
   
 
-
 ```
 
-These are the six Municipalities with the Tarifa Zero Policy, which have
+These are the seven Municipalities with the Tarifa Zero Policy, which have
 urban mobility plan as established by Federal Law number
 12587/2012, according to a survey by the National Secretariat for Mobility and
 Urban Services (SEMOB), which was last updated in February
@@ -1866,30 +1906,30 @@ classification of the values attributed by the index to each municipality:
 # juntando as bases: 
 
   tbl <- ffpt_4  %>% left_join(geral_4, by = "name") %>% 
-    mutate(name = case_when(name == "ivs_cap_class" ~ "Capital Humano", 
-                            name == "ivs_class" ~ "Geral", 
-                            name == "ivs_infra_urbana_class" ~ "Infraestrutura Urbana", 
-                            name == "ivs_renda_trab_class" ~ "Renda e Trabalho", TRUE ~ name))
+    mutate(name = case_when(name == "ivs_class" ~ "General", 
+                            name == "ivs_cap_class" ~ "Human Capital", 
+                            name == "ivs_infra_urbana_class" ~ "Urban Infrastructure", 
+                            name == "ivs_renda_trab_class" ~ "Income and Work", TRUE ~ name))
   
 # tabela 
 
-  tbl %>% select(name, Alta.x, Média.x, Baixa.x, `Muito Baixa.x`,  Alta.y,  Média.y, Baixa.y, `Muito Baixa.y`) %>% 
+  tbl %>% select(name, High.x, Medium.x, Low.x, `Very Low.x`,  High.y,  Medium.y, Low.y, `Very Low.y`) %>% 
       reactable(
       defaultColDef = colDef(
       align = "center"),
       columns = list(
       name = colDef("Social Vulnerability Index", minWidth = 150),
-      Alta.x = colDef("High", minWidth = 70),
-      Baixa.x = colDef("Low", minWidth = 70),
-      Média.x = colDef("Medium", minWidth = 70), 
-      `Muito Baixa.x` = colDef("Very Low", minWidth = 70),
-      Alta.y = colDef("High", minWidth = 70),
-      Baixa.y = colDef("Low", minWidth = 70),
-      Média.y = colDef("Medium", minWidth = 70), 
-      `Muito Baixa.y` = colDef("Very Low", minWidth = 70)), 
+      High.x = colDef("High", minWidth = 70),
+      Low.x = colDef("Low", minWidth = 70),
+      Medium.x = colDef("Medium", minWidth = 70), 
+      `Very Low.x` = colDef("Very Low", minWidth = 70),
+      High.y = colDef("High", minWidth = 70),
+      Low.y = colDef("Low", minWidth = 70),
+      Medium.y = colDef("Medium", minWidth = 70), 
+      `Very Low.y`= colDef("Very Low", minWidth = 70)), 
     columnGroups = list(
-    colGroup(name = "Municipalities with Tarifa Zero", columns = c("Alta.x", "Baixa.x", "Média.x", "Muito Baixa.x")),
-    colGroup(name = "Municipalities without Tarifa Zero", columns = c("Alta.y", "Baixa.y", "Média.y", "Muito Baixa.y"))))
+    colGroup(name = "Municipalities with Tarifa Zero", columns = c("High.x", "Low.x", "Medium.x", "Very Low.x")),
+    colGroup(name = "Municipalities without Tarifa Zero", columns = c("High.y", "Low.y", "Medium.y", "Very Low.y"))))
      
  
 
@@ -2122,33 +2162,33 @@ difference between the two groups, which are in the same "very high" MHDI group.
 # juntando as bases: 
 
   tbl_2 <- ffpt_5  %>% left_join(geral_5, by = "name") %>% 
-    mutate(name = case_when(name == "idhm_class" ~ "Geral", 
-                            name == "idhm_r_class" ~ "Renda", 
-                            name == "idhm_e_class" ~ "Educação", 
-                            name == "idhm_l_class" ~ "Longevidade", TRUE ~ name)) %>% 
+    mutate(name = case_when(name == "idhm_class" ~ "General", 
+                            name == "idhm_r_class" ~ "Income", 
+                            name == "idhm_e_class" ~ "Education", 
+                            name == "idhm_l_class" ~ "Longevity", TRUE ~ name)) %>% 
     mutate_if(is.character, ~replace(., is.na(.), "0%"))
   
 # tabela 
 
   tbl_2 %>% 
-      select(name, Alto.x, `Muito Alto.x`, Médio.x, Baixo.x, Alto.y, `Muito Alto.y`, Médio.y, Baixo.y, `Muito Baixo`) %>% 
+      select(name, High.x, `Very High.x`, Medium.x, Low.x, High.y, `Very High.y`, Medium.y, Low.y, `Very Low`) %>% 
       reactable(
       defaultColDef = colDef(
       align = "center"),
       columns = list(
-      name = colDef("Municipal Human development Index", minWidth = 140),
-      Alto.x = colDef("High", minWidth = 70),
-      Baixo.x = colDef("Low", minWidth = 70),
-      Médio.x = colDef("Medium", minWidth = 70), 
-      `Muito Alto.x` = colDef("Very High", minWidth = 70),
-      Alto.y = colDef("High", minWidth = 70),
-      Baixo.y = colDef("Low", minWidth = 70),
-      Médio.y = colDef("Medium", minWidth = 70), 
-      `Muito Alto.y` = colDef("Very High", minWidth = 70),
-      `Muito Baixo` = colDef("Very Low", minWidth = 70)), 
+      name = colDef("Municipal Human development Index", minWidth = 130),
+      High.x = colDef("High", minWidth = 70),
+      Low.x = colDef("Low", minWidth = 70),
+      Medium.x = colDef("Medium", minWidth = 75), 
+      `Very High.x` = colDef("Very High", minWidth = 70),
+      High.y = colDef("High", minWidth = 70),
+      Low.y = colDef("Low", minWidth = 70),
+      Medium.y = colDef("Medium", minWidth = 75), 
+      `Very High.y` = colDef("Very High", minWidth = 70),
+      `Very Low` = colDef("Very Low", minWidth = 65)), 
     columnGroups = list(
-    colGroup(name = "Municipalities with Tarifa Zero", columns = c("Alto.x", "Baixo.x", "Médio.x", "Muito Alto.x")),
-    colGroup(name = "Municipalities without Tarifa Zero", columns = c("Alto.y", "Baixo.y", "Médio.y", "Muito Baixo","Muito Alto.y"))))
+    colGroup(name = "Municipalities with Tarifa Zero", columns = c("High.x", "Low.x", "Medium.x", "Very High.x")),
+    colGroup(name = "Municipalities without Tarifa Zero", columns = c("High.y", "Low.y", "Medium.y", "Very Low","Very High.y"))))
      
 
 ```
@@ -2358,7 +2398,7 @@ banco_completo_6 <- banco_completo_5 %>%
   st_as_sf(coords=c("geom")) %>%
   ggplot() +
   geom_sf(aes(geometry = geom), color = "gray", fill = "seashell2")  +
-  geom_sf(data=muni_geobr_4, aes(fill = "Cities with Tarifa Zero's policy"), shape = 21,
+  geom_sf(data=muni_geobr_4, aes(fill = "Cities with Tarifa Zero Policy"), shape = 21,
           color = "white",
           size = 3,
           show.legend = T, 
