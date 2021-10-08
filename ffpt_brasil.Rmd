@@ -475,24 +475,24 @@ geo_ufs <- read_state(code_state = 'all', year = 2018)
 
 ```{r mapa teste, fig.align = 'center', out.width = "90%"}
 
-geo_ufs_2 %>% 
-  st_as_sf(coords=c("geom")) %>%
-  ggplot() +
-  geom_sf(aes(geometry = geom),color = "darkgray", fill = "seashell2", alpha = .8)  +
-  geom_sf(data=muni_geobr_3,aes(fill = Municipio), shape = 21,
-          color = "white",
-          fill = "#b783a9",
-          size = 5,
-          alpha = 0.8,
-          show.legend = F) +
-  theme_void() +
-  labs(caption = "") +
-  geom_text_repel(data=muni_geobr_3, aes(label = Municipio, geometry = geom),
-                  stat = "sf_coordinates",
-                  force = 1000,
-                  color = "skyblue4",
-                  max.overlaps = Inf) +
-  theme(plot.caption = element_text(size = 9, vjust = 0.9, family = "serif", color = "#5b6370"))
+# geo_ufs_2 %>% 
+#   st_as_sf(coords=c("geom")) %>%
+#   ggplot() +
+#   geom_sf(aes(geometry = geom),color = "darkgray", fill = "seashell2", alpha = .8)  +
+#   geom_sf(data=muni_geobr_3,aes(fill = Municipio), shape = 21,
+#           color = "white",
+#           fill = "#b783a9",
+#           size = 5,
+#           alpha = 0.8,
+#           show.legend = F) +
+#   theme_void() +
+#   labs(caption = "") +
+#   geom_text_repel(data=muni_geobr_3, aes(label = Municipio, geometry = geom),
+#                   stat = "sf_coordinates",
+#                   force = 1000,
+#                   color = "skyblue4",
+#                   max.overlaps = Inf) +
+#   theme(plot.caption = element_text(size = 9, vjust = 0.9, family = "serif", color = "#5b6370"))
 
 
 ```
@@ -542,6 +542,27 @@ geo_ufs_2 %>%
 
 ```
 
+
+```{r leaflet map,  fig.align = 'center', out.width = "90%"}
+
+# Primeiro precisamos dos dados de latitude e longitude das cidades analisadas. 
+urlfile <- "https://raw.githubusercontent.com/kelvins/Municipios-Brasileiros/master/csv/municipios.csv"
+cities_lat_lng <- read.csv(urlfile,encoding = "UTF-8")
+# é necessário se certificar que o código de cada cidade estará em formato de texto, para o que a função left_join funcione. 
+cities_lat_lng$codigo_ibge <- as.double(cities_lat_lng$codigo_ibge)
+
+ffpt_muni_5 <- banco_completo_5 %>% rename(codigo_ibge = CodMun) %>% 
+  left_join(cities_lat_lng, by = "codigo_ibge")
+
+tarifa_zero <- ffpt_muni_5 %>% filter(tarifa_zero == "sim") %>% select(latitude, longitude, nome_muni)
+
+  leaflet(tarifa_zero) %>%
+  addTiles() %>% 
+  addMarkers(popup= tarifa_zero$nome_muni)
+
+
+
+```
 
 This table shows us the region of the municipalities, through it we can see that more than half of them are located in the
 southeast of the Brazil. We know that the northeast is the region of Brazil with more municipalities, followed by the southeast region, 
@@ -2428,4 +2449,6 @@ banco_completo_6 <- banco_completo_5 %>%
 #          dynamicTicks = F)
 
 ```
+
+
 
