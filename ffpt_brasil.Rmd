@@ -2343,10 +2343,14 @@ The graph below compares social prosperity in two groups, again the municipaliti
 
 mov_passe_livre <- tibble(CodMun=c(3550308, 4205407, 4209102, 3136702, 3543402, 2507507, 2914802, 3304557, 3549904, 3302205, 3143302, 2111300,  1302603, 3170206, 3539806,5002704, 3518800, 2513703, 2408102, 2704302, 3548500, 4204202, 2927408, 2513851, 3522208, 3520400, 1501402, 5103403,  
 3106200, 4314407, 2304400, 1200401, 3525300, 4113700, 3303807, 3304201, 3516309,  3503208),
-        nome_movi_passe_livre=c("Passe Livre São Paulo", "Passe Livre Floripa", "Passe Livre Joinville", "Passe Livre Juiz de Fora", "Passe Livre Ribeirão Preto", "Passe Livre João Pessoa", "Passe Livre Itabuna", "Passe Livre Rio de Janeiro", "Passe Livre São José dos Campos", "Passe Livre Itaperuna", "Passe Livre Montes Claros", "Passe Livre Manaus", "Passe Livre Maranhão", "Passe Livre Uberlândia", "Passe Livre Poá", "Passe Livre Mato Grosso do Sul", "Passe Livre Guarulhos", "Passe Livre Santa Rita", "Passe Livre Natal", "Passe Livre Maceió", "Passe Livre Santos", "Passe Livre Chapecó", "Passe Livre Salvador", "Passe Livre Região Grande ABC", "Passe Livre Itapecerica da Serra", "Passe Livre Ilhabela", "Passe Livre Belém","Passe Livre Cuiabá", "Passe Livre Belo Horizonte", "Passe Livre Pelotas", "Passe Livre Fortaleza", "Passe Livre Acre", "Passe Livre Jaú", "Passe Livre Londrina", "Passe Livre Paraty", "Passe Livre Resende", "Passe Livre Francisco Morato", "Passe Livre Araraquara"))
+        nome_movi_passe_livre=c("Passe Livre São Paulo", "Passe Livre Floripa", "Passe Livre Joinville", "Passe Livre Juiz de Fora", "Passe Livre Ribeirão Preto", "Passe Livre João Pessoa", "Passe Livre Itabuna", "Passe Livre Rio de Janeiro", "Passe Livre São José dos Campos", "Passe Livre Itaperuna", "Passe Livre Montes Claros", "Passe Livre Manaus", "Passe Livre Maranhão", "Passe Livre Uberlândia", "Passe Livre Poá", "Passe Livre Mato Grosso do Sul", "Passe Livre Guarulhos", "Passe Livre Santa Rita", "Passe Livre Natal", "Passe Livre Maceió", "Passe Livre Santos", "Passe Livre Chapecó", "Passe Livre Salvador", "Passe Livre Região Grande ABC", "Passe Livre Itapecerica da Serra", "Passe Livre Ilhabela", "Passe Livre Belém","Passe Livre Cuiabá", "Passe Livre Belo Horizonte", "Passe Livre Pelotas", "Passe Livre Fortaleza", "Passe Livre Acre", "Passe Livre Jaú", "Passe Livre Londrina", "Passe Livre Paraty", "Passe Livre Resende", "Passe Livre Francisco Morato", "Passe Livre Araraquara"), 
+ data_origem_pl = c(2011, 2011, 2011, 2012, 2012, 2012, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2014, 2014, 2014, 2015, 2015, 2015, 2016, 2016, 2016, 2017, 2017, 2018, 2018), 
+ numero_curtidas_pl = c(301055, 8199, 5637, 201, 3785, 301, 188, 19431, 9850, 318, 84, 1387, 180, 74, 468, 177, 3928, 1218, 626, 150, 745, 50, 5431, 2153, 63,  43, 1356, 287, 6030, 538, 222, 579, 605, 640, 71, 62, 397, 40))
 
 mov_tarifa_zero <- tibble(CodMun = c(2927408,2606200, 2800308, 2913606, 3106200, 4209102, 4106902, 3516200, 3303500, 3506003, 4202404, 3531803), 
-                          nome_movi_tarifa_zero = c("Tarifa Zero Salvador", "Tarifa Zero Goiânia", "Tarifa Zero Aracaju", "Tarifa Zero Ilhéus", "Tarifa Zero BH", "Tarifa Zero Joinville", "Tarifa Zero Curitiba", "Tarifa Zero Franca", "Tarifa Zero Nova Iguaçu", "Tarifa Zero Bauru", "Tarifa Zero Blumenau",  "Tarifa Zero de Monte Mor"))
+                          nome_movi_tarifa_zero = c("Tarifa Zero Salvador", "Tarifa Zero Goiânia", "Tarifa Zero Aracaju", "Tarifa Zero Ilhéus", "Tarifa Zero BH", "Tarifa Zero Joinville", "Tarifa Zero Curitiba", "Tarifa Zero Franca", "Tarifa Zero Nova Iguaçu", "Tarifa Zero Bauru", "Tarifa Zero Blumenau",  "Tarifa Zero de Monte Mor"),
+                          data_origem_tf = c(2003, 2011, 2013, 2013, 2013, 2013, 2014, 2014, 2015, 2015, 2016, 2016), 
+                          numero_curtidas_tf = c(2610, 1544, 43, 27, 21438, 473, 1073, 305, 106, 387, 528, 23))
 
 banco_completo_6 <- banco_completo_5 %>% 
   left_join(mov_passe_livre, by = "CodMun") %>% 
@@ -2410,7 +2414,7 @@ banco_completo_6 <- banco_completo_5 %>%
 
 ```
 
-```{r mapa mov. sociais plot, fig.align = 'center', out.width = "150%", dpi=300}
+```{r mapa mov. sociais plot, eval=FALSE, fig.align='center', dpi=300, include=FALSE, out.width="150%"}
 
 
 # gráfico de mapa colocando os municípios dentro de seus respectivos estados: 
@@ -2419,11 +2423,11 @@ banco_completo_6 <- banco_completo_5 %>%
   st_as_sf(coords=c("geom")) %>%
   ggplot() +
   geom_sf(aes(geometry = geom), color = "gray", fill = "seashell2")  +
-  geom_sf(data=muni_geobr_4, aes(fill = "Cities with Tarifa Zero Policy"), shape = 21,
+  geom_sf(data=muni_geobr_4, aes(fill = "Cities with Tarifa Zero Policy"), shape = 25,
           color = "white",
           size = 3,
           show.legend = T, 
-          alpha = 0.8) +
+          alpha = 1) +
   geom_sf(data= muni_geobr_5, aes(fill = "Cities with Passe Livre Movement"), shape = 21,
           color = "white",
           size = 3,
@@ -2438,7 +2442,7 @@ banco_completo_6 <- banco_completo_5 %>%
   labs(fill = "",
        title = "", 
        caption = "")+
-   scale_fill_brewer(name = "", palette = "Set2") +
+   scale_fill_brewer(name = "", palette = "Set1") +
    theme(plot.title = element_text(family = "serif", size = 12, vjust = 0.0010, hjust = 0.5, color = "cornsilk4"),
          plot.caption = element_text(family = "roboto", size = 9, color = "#404040", hjust = 0.9),
          text = element_text(family = "serif", size = 12))
@@ -2450,5 +2454,108 @@ banco_completo_6 <- banco_completo_5 %>%
 
 ```
 
+The map below contains the location of social movements that act or acted in Brazil for Tarifa Zero in public transport. The data were collected from the search for pages on facebook. 50 pages of social movements were found, among them, 12 are entitled "Movimento Tarifa Zero", and 38 of them, "Movimento Passe Livre", also bearing the name of the city of origin of the movement. 
 
+```{r tabela icones}
+
+
+tibble("An icon like this:" = "",
+       "equals to" = c("Tarifa Zero Movements",
+                        "Cities with Tarifa Zero")) %>% 
+  kbl(booktabs = T,
+      align = "cl") %>%
+  kable_paper(full_width = F,  html_font = "Cambria") %>%
+    column_spec(1, image = spec_image(c("https://img.icons8.com/dusk/64/000000/strike.png", "https://img.icons8.com/ios-filled/50/000000/bus.png"), 80,80))
+
+```
+
+
+```{r, fig.align = 'center', dpi=300}
+
+
+ffpt_muni_6 <- banco_completo_6 %>% rename(codigo_ibge = CodMun) %>% 
+  left_join(cities_lat_lng, by = "codigo_ibge")
+
+tarifa_zero <- ffpt_muni_5 %>% filter(tarifa_zero == "sim") %>% select(latitude, longitude, nome_muni)
+
+passe_livre <- ffpt_muni_6 %>% select(latitude, longitude, nome_movi_passe_livre) %>% 
+  filter(!is.na(nome_movi_passe_livre))
+
+movi_tarifa_zero <- ffpt_muni_6 %>% select(latitude, longitude, nome_movi_tarifa_zero) %>% 
+  filter(!is.na(nome_movi_tarifa_zero))
+
+# mapa: 
+
+###icone: 
+
+onibus <- makeIcon(
+  iconUrl = "https://img.icons8.com/ios-filled/50/000000/bus.png",
+  iconWidth = 15, iconHeight = 15)
+  
+movimentos <- makeIcon(
+  iconUrl = "https://img.icons8.com/dusk/64/000000/strike.png",
+  iconWidth = 20, iconHeight = 20)
+  
+
+  
+  leaflet(height=550, width=800) %>% 
+  addTiles() %>% 
+  addMarkers(data = tarifa_zero,
+             label = ~nome_muni,
+             icon = onibus,
+         #   clusterOptions = markerClusterOptions(),
+             popup= paste("<b> Cidade com Tarifa Zero: </b>", tarifa_zero$nome_muni,"<br>")) %>% 
+  addMarkers(data = passe_livre,
+             label = ~nome_movi_passe_livre,
+             icon = movimentos,
+           # clusterOptions = markerClusterOptions(),
+             popup= paste("<b> Nome do Movimento: </b>", passe_livre$nome_movi_passe_livre,"<br>")) %>% 
+    addMarkers(data = movi_tarifa_zero,
+             label = ~nome_movi_tarifa_zero,
+              icon = movimentos,
+           #  clusterOptions = markerClusterOptions(),
+             popup= paste("<b> Nome do Movimento: </b>", movi_tarifa_zero$nome_movi_tarifa_zero,"<br>"))
+
+
+
+```
+
+
+The table below shows us some information about the social movement pages found on facebook: 
+
+
+```{r}
+
+# organizando os dados 
+
+tbl_2 <- banco_completo_6 %>% 
+  select(nome_movi_passe_livre, data_origem_pl, numero_curtidas_pl) %>% 
+  filter(!is.na(nome_movi_passe_livre)) %>% 
+  rename(nome_movi = nome_movi_passe_livre, data_origem = data_origem_pl, numero_curtidas = numero_curtidas_pl)
+
+
+
+tbl_3 <- banco_completo_6 %>% 
+  select(nome_movi_tarifa_zero, data_origem_tf, numero_curtidas_tf) %>% 
+  filter(!is.na(nome_movi_tarifa_zero)) %>% 
+  rename(nome_movi = nome_movi_tarifa_zero, data_origem = data_origem_tf, numero_curtidas = numero_curtidas_tf)
+
+
+  tbl_4 <- tbl_2 %>% full_join(tbl_3, by = c("nome_movi", "data_origem", "numero_curtidas"))
+
+
+# tabela 
+
+      tbl_4 %>% 
+      reactable(defaultPageSize = 7,
+      defaultColDef = colDef(
+      align = "center"),
+      columns = list(
+      data_origem = colDef("Date of Origin", minWidth = 100),
+      numero_curtidas = colDef("Number of Likes", minWidth = 100),
+      nome_movi = colDef("Name of Movement", minWidth = 110)))
+     
+
+
+```
 
