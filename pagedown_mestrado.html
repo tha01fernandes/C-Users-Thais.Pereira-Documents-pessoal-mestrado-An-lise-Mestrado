@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width">
+<meta property="og:title" content="Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público" />
+
+
+
+
+<meta name="author" content="Thais Fernandes Pereira" />
+
+<meta name="date" content="2021-11-20" />
+
+<meta name="description" content="Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público">
+
+<script id="pandoc-meta" type="application/json">
+{"newpage_html_class":"page-break-after","date":"2021-11-20","output":{"pagedown::html_paged":{"self_contained":false,"toc":true}},"author":"Thais Fernandes Pereira","knit":"pagedown::chrome_print","title":"Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público"}
+</script>
+
+<title>Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público</title>
+
+
+<script src="pagedown_mestrado_files/header-attrs-2.11/header-attrs.js"></script>
+<link href="pagedown_mestrado_files/paged-0.15/css/default-fonts.css" rel="stylesheet" />
+<link href="pagedown_mestrado_files/paged-0.15/css/default-page.css" rel="stylesheet" />
+<link href="pagedown_mestrado_files/paged-0.15/css/default.css" rel="stylesheet" />
+<script src="pagedown_mestrado_files/paged-0.15/js/config.js"></script>
+<script src="pagedown_mestrado_files/paged-0.15/js/paged.js"></script>
+<script src="pagedown_mestrado_files/paged-0.15/js/hooks.js"></script>
+
+
+
+
+
+</head>
+
+<body>
+
+<div class="running-h1-title"></div>
+
+<div class="running-h2-title"></div>
+
+
+
+<div class="front-page">
+<div id="header" class="title-page">
+<h1 class="title">Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público</h1>
+<h2 class="author">Thais Fernandes Pereira</h2>
+<h2 class="date">2021-11-20</h2>
+</div>
+</div>
+
+<div class="front-matter-container">
+<div id="TOC" class="level1 toc front-matter">
+<ul>
+<li><a href="#abstract"><span class="toc-section-number">1</span> Abstract</a></li>
+<li><a href="#data-base"><span class="toc-section-number">2</span> 1. Data base</a></li>
+</ul>
+</div>
+</div>
+
+<div class="main">
+<div id="abstract" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Abstract</h1>
+<p>This report analyse data from 31 Brazilian cities that have adopted the full fare exemption on public transport, more popularly known in Brazil as the “Tarifa Zero”, a term that will be used in this report to refer to this policy. For the selection of cases, two criteria were used: i. The policy was implemented in all transport networks in the city; ii. It is available to all users. We intend to present an exploratory analysis of public data about the studied municipalities and characterize them by checking if there is homogeneity in their economic and social characteristics, in addition to comparing them with all others that have not adopted the policy, with the objective to understand the differences and disparities between the two groups of cities.</p>
+</div>
+<div id="data-base" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> 1. Data base</h1>
+<p>Below is a table with information about the municipalities that have adopted the Tarifa Zero policy. The year of implementation was collected from Marijke Vermander’s master’s thesis (2021), “Exploring Fare-Free Public Transport in Brazil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities”. The GDP per capita is IBGE 2018 data, the urbanization rate uses data from the IBGE population estimate for 2019, the population density was produced based on data from this same estimate, however using the total area of the IBGE 2020. Social Vulnerability Index (IVS) data are from IPEA and are published in the “Atlas da Vulnerabilidade Social dos Municípíos Brasileiros” and were produced based on data from the 2010 census. All other data are from the Human Development Index of the municipalities , collected from the “Atlas do Desenvolvimento Humano” and are data from 2010. The AbjData R package (<a href="https://abjur.github.io/abjData/" class="uri">https://abjur.github.io/abjData/</a>) was used, which contains some of these systematized data for all Brazilian municipalities.</p>
+</div>
+</div>
+
+
+
+<script>
+// when the page is about to reload via servr, remember the scroll position
+document.addEventListener('servr:reload', function(e) {
+  sessionStorage.setItem('pagedown-scroll', window.scrollY);
+});
+</script>
+</body>
+</html>

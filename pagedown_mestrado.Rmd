@@ -1,0 +1,26 @@
+---
+title: "Análise Exploratória de Municípios brasileiros que adotaram a Isenção de Tarifa no Transporte Público "
+author: "Thais Fernandes Pereira"
+date: "`r Sys.Date()`"
+output:
+  pagedown::html_paged:
+    toc: true
+    # change to true for a self-contained document, but it'll be a litte slower for Pandoc to render
+    self_contained: false
+# uncomment this line to produce HTML and PDF in RStudio:
+knit: pagedown::chrome_print
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Abstract
+
+This report analyse data from 31 Brazilian cities that have adopted the full fare exemption on public transport, more popularly known in Brazil as the "Tarifa Zero", a term that will be used in this report to refer to this policy. For the selection of cases, two criteria were used: i. The policy was implemented in all transport networks in the city; ii. It is available to all users. We intend to present an exploratory analysis of public data about the studied municipalities and characterize them by checking if there is homogeneity in their economic and social characteristics, in addition to comparing them with all others that have not adopted the policy, with the objective to understand the differences and disparities between the two groups of cities.  
+
+
+# 1. Data base
+
+Below is a table with information about the municipalities that have adopted the Tarifa Zero policy. The year of implementation was collected from Marijke Vermander's master's thesis (2021), "Exploring Fare-Free Public Transport in Brazil: Rationales and characteristics of Tarifa Zero policies in small Brazilian municipalities". The GDP per capita is IBGE 2018 data, the urbanization rate uses data from the IBGE population estimate for 2019, the population density was produced based on data from this same estimate, however using the total area of the IBGE 2020. Social Vulnerability Index (IVS) data are from IPEA and are published in the "Atlas da Vulnerabilidade Social dos Municípíos Brasileiros" and were produced based on data from the 2010 census. All other data are from the Human Development Index of the municipalities , collected from the "Atlas do Desenvolvimento Humano" and are data from 2010. The AbjData R package (https://abjur.github.io/abjData/) was used, which contains some of these systematized data for all Brazilian municipalities. 
