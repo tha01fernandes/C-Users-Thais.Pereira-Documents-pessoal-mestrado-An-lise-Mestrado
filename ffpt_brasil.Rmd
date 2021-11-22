@@ -1083,7 +1083,7 @@ urban mobility plan as established by Federal Law number
 12587/2012, according to a survey by the National Secretariat for Mobility and
 Urban Services (SEMOB), which was last updated in February
 2019. We ca see that just one city implemented Tarifa Zero in the same year of the plan's elaboration, Campo Belo in the state of Minas Gerais. 
-furthermore, just Cerqilho and Vargem Grande Paulista adopted this policy after the plan's elaborations, the others cities did it before.  
+furthermore, just Cerqilho and Vargem Grande Paulista adopted this policy after the plan's elaboration, the others cities did it before.  
 
 ```{r Plano de Mobilidade Tabela}
 
