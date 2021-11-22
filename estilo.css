@@ -131,3 +131,9 @@ a:hover {
     color: #396892; /* darker color when hovering */
 }
 
+.ReactTable .rt-table
+{ 
+    margin-left: auto;
+    margin-right: auto;
+}
+

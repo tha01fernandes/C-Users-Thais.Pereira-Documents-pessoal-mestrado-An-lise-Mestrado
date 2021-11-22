@@ -56,7 +56,6 @@ library("knitr")
 library("tidylog")
 library("DT")
 library("kableExtra")
-library("knitr")
 library("tidylog")
 library("readxl")
 library("geobr")
@@ -80,6 +79,7 @@ library("ggrepel")
 library("leaflet")
 
 ```
+
 
 ```{r baixando arquivos}
 
@@ -162,13 +162,13 @@ banco_completo <- pnud_muni %>%
   select(-`COD UF`, -UF, -`NOME MUNIC`) %>% 
   mutate(`CLASSE POP` = gsub(pattern = "1 -|2 -|3 -|4 -|5 -|6 -|7 -",replacement = "",`CLASSE POP`)) %>% 
   mutate(REGIAO = gsub(pattern = "1 -|2 -|3 -|4 -|5 -",replacement = "", REGIAO)) %>% 
-  mutate(`CLASSE POP` = gsub("Até 5000","Até 5.000", `CLASSE POP`)) %>% 
-  mutate(`CLASSE POP` = gsub("5001 até 10000","5.000 Até 10.000", `CLASSE POP`)) %>%  
-  mutate(`CLASSE POP` = gsub("10001 até 20000","10.000 Até 20.000", `CLASSE POP`)) %>% 
-  mutate(`CLASSE POP` = gsub("20001 até 50000","20.000 Até 50.000", `CLASSE POP`)) %>% 
-  mutate(`CLASSE POP` = gsub("50001 até 100000","50.000 Até 100.000", `CLASSE POP`)) %>% 
-  mutate(`CLASSE POP` = gsub("100001 até 500000","100.000 Até 500.000",`CLASSE POP`)) %>%
-  mutate(`CLASSE POP` = gsub("Maior que 500000","Maior que 500.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("Até 5000","Up to 5.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("5001 até 10000","5.000 up to 10.000", `CLASSE POP`)) %>%  
+  mutate(`CLASSE POP` = gsub("10001 até 20000","10.000 up to 20.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("20001 até 50000","20.000 up to 50.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("50001 até 100000","50.000 up to 100.000", `CLASSE POP`)) %>% 
+  mutate(`CLASSE POP` = gsub("100001 até 500000","100.000 up to 500.000",`CLASSE POP`)) %>%
+  mutate(`CLASSE POP` = gsub("Maior que 500000","Greater than 500.000", `CLASSE POP`)) %>% 
   left_join(indice_ipea, by = c("CodMun" = "Município")) %>% 
   left_join(area_territorial, by = c("CodMun"))
  
@@ -566,7 +566,7 @@ tarifa_zero <- ffpt_muni_5 %>% filter(tarifa_zero == "sim") %>% select(latitude,
 
 This table shows us the region of the municipalities, through it we can see that more than half of them are located in the
 southeast of the Brazil. We know that the northeast is the region of Brazil with more municipalities, followed by the southeast region, 
-however, the northeast only has 2 municipalities with Tarifa Zero. 
+however, the northeast only has 3 municipalities with Tarifa Zero. 
 
 ```{r Região dos Municípios,fig.align = 'center', out.width = "50%"}
 
@@ -579,11 +579,24 @@ however, the northeast only has 2 municipalities with Tarifa Zero.
         "Nordeste", ordered = T))) %>% 
   group_by(REGIAO) %>%
   tally() %>% 
-  mutate(pct = n/sum(n)) %>% 
-  mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
-  select(- n) %>% 
-  kable(digits=1, col.names=c("Region", "Proportion of Municipalities")) %>%
-  kable_classic_2(full_width = F, html_font = "Cambria")
+   # mutate(pct = n/sum(n)) %>% 
+   # mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
+   # select(- n) %>% 
+  # kable(digits=1, col.names=c("Region", "Number of municipalities with Tarifa Zero")) %>%
+  # kable_classic_2(full_width = F, html_font = "Cambria")
+  reactable(
+      outlined = F, 
+      fullWidth = F,
+      bordered = TRUE,
+      striped = TRUE,
+      defaultColDef = colDef(
+      align = "center"),
+      columns = list(
+      REGIAO = colDef("Region", minWidth = 120, align = "center"),
+      n = colDef("Number of municipalities with Tarifa Zero", minWidth = 300, align = "center")))
+
+
+
 
 ```
 
@@ -600,16 +613,29 @@ In the table below we can see that among 27 Brazilian states, seven have a munic
         "CE", "GO", "RJ", "RS", ordered = T))) %>% 
   group_by(UF) %>%
   tally() %>%
-  mutate(pct = n/sum(n)) %>% 
-  mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
-  select(- n) %>% 
-  kable(digits=1, col.names=c("Federative Unit", "Proportion of Municipalities")) %>%
-  kable_classic_2(full_width = F, html_font = "Cambria")
+  # mutate(pct = n/sum(n)) %>% 
+  # mutate(pct = paste0(round(pct * 100, 0),"%")) %>% 
+  # select(- n) %>% 
+  # kable(digits=1, col.names=c("Federative Unit", "Municipalities with Tarifa Zero")) %>%
+  # kable_classic_2(full_width = F, html_font = "Cambria")
+    reactable(
+      outlined = F, 
+      fullWidth = F,
+      bordered = TRUE,
+      striped = TRUE,
+      defaultColDef = colDef(
+      align = "center"),
+      columns = list(
+      UF = colDef("Federative Unit", minWidth = 120, align = "center"),
+      n = colDef("Number of municipalities with Tarifa Zero", minWidth = 300, align = "center")))
+
+
+
 ```
 
 ## 3. Population Class
 
-In the table below, we can see the proportion of municipalities in each population class, both municipalities with Tarifa Zero and those that have not adopted the policy. It is possible to observe that most of the municipalities, 37% of them, have a population between 20 and 50 thousand inhabitants while 30% have a population between 10 and 20 thousand inhabitants, that is, most of the municipalities, 67% have a population between 10 and 50 thousand inhabitants, which can be considered "small", among the municipalities that have not adopted the policy, 44% of them are part of this population class. It is interesting to note that there are no municipalities with a population of up to 5,000 inhabitants or more than 500,000 inhabitants that have adopted the Tarifa Zero. 
+In the table below, we can see the number of municipalities in each population class, both municipalities with Tarifa Zero and those that have not adopted the policy. It is possible to observe that most of the municipalities, 37% of them, have a population between 20 and 50 thousand inhabitants while 30% have a population between 10 and 20 thousand inhabitants, that is, the majority of municipalities, or 67%, have a population between 10 and 50 thousand inhabitants, which can be considered "small", among the municipalities that have not adopted the policy, 44% of them are part of this population class. It is interesting to note that there are no municipalities with a population of up to 5,000 inhabitants or more than 500,000 inhabitants that have adopted the Tarifa Zero. 
 
 ```{r Classe Populacional dos Municípios, fig.align = 'center', out.width = "65%", dpi=300}
 
@@ -619,41 +645,41 @@ In the table below, we can see the proportion of municipalities in each populati
    filter(tarifa_zero == "sim") %>% 
    group_by(classe_pop) %>% 
    tally() %>% 
-   mutate(pct = n/sum(n)) %>% 
-   select(- n)
+   ungroup()
    
  
    munic_geral_classe_pop <- banco_completo_5 %>% 
    filter(tarifa_zero == "não") %>% 
    group_by(classe_pop) %>% 
    tally() %>% 
-   mutate(pct = n/sum(n)) %>% 
-   select(- n)
+   ungroup()
    
   munic_interese_classe_pop %>% 
   full_join(munic_geral_classe_pop, by = "classe_pop") %>%
   mutate(classe_pop = trimws(classe_pop)) %>% 
-  mutate(pct.x = paste0(round(pct.x * 100, 0),"%")) %>% 
-  mutate(pct.y = paste0(round(pct.y * 100, 0),"%")) %>% 
-  mutate(pct.x = case_when(classe_pop == "Maior que 500.000" ~ "0%", 
-                           classe_pop == "Até 5.000" ~ "0%", TRUE ~ pct.x)) %>%
-  mutate(classe_pop = factor(classe_pop, levels = c("Até 5.000", 
-                                                    "5.000 Até 10.000", 
-                                                    "10.000 Até 20.000", 
-                                                    "20.000 Até 50.000",
-                                                    "50.000 Até 100.000", 
-                                                    "100.000 Até 500.000", 
-                                                    "Maior que 500.000", ordered = TRUE))) %>%
-   rename("Classe Populacional" = classe_pop, "Municipios com FFPT" = pct.x, "Municipios sem FFPT" = pct.y) %>%
-   kable(digits=1, col.names=c("Population Class", 
-                               "Municipalities with Tarifa Zero", 
-                               "Municipalities without Tarifa Zero")) %>%
-   kable_classic_2(full_width = F, html_font = "Cambria") 
-   
+  mutate_if(is.numeric, ~replace(., is.na(.), 0)) %>% 
+  mutate(classe_pop = factor(classe_pop, levels = c("Up to 5.000", 
+                                                    "5.000 up to 10.000", 
+                                                    "10.000 up to 20.000", 
+                                                    "20.000 up to 50.000",
+                                                    "50.000 up to 100.000", 
+                                                    "100.000 up to 500.000", 
+                                                    "Greater than 500.000", ordered = T))) %>%
+      reactable(
+      outlined = F, 
+      fullWidth = F,
+      bordered = TRUE,
+      striped = TRUE,
+      defaultColDef = colDef(
+      align = "center"),
+      columns = list(
+      classe_pop = colDef("Population Class", minWidth = 190, align = "center"),
+      n.x = colDef("Municipalities with Tarifa Zero", minWidth = 230, align = "center"), 
+      n.y = colDef("Municipalities without Tarifa Zero", minWidth = 240, align = "center")))
+
   
 
 ```
-
 
 
 ```{r Médias Tamanho da Pop}
@@ -669,14 +695,14 @@ format_milhar <- function(values, nsmall = 0) {
 
 media_pop_ffpt <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(pop_estimada_2019)) %>% 
+  summarize(median(pop_estimada_2019)) %>% 
   round(digits = 0) %>% 
   format_milhar()
 
 
 media_pop_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(pop_estimada_2019, na.rm = TRUE)) %>% 
+  summarize(median(pop_estimada_2019, na.rm = TRUE)) %>% 
   round(digits = 0) %>% 
   format_milhar()
  
@@ -698,7 +724,7 @@ max_pop_geral <- banco_completo_5 %>%
 
 ```
 
-In the graph below, we can see the estimated population of 2019 by the IBGE for all cities that adopted the Tarifa Zero, together with the national average (vertical line). The population average of the municipalities with the Zero Tariff is `r media_pop_ffpt` thousand inhabitants, with very different amounts, we have a maximum of `r max_pop_ffpt` as is the case of Caucaia in Ceará, and a minimum of `r min_pop_ffpt` inhabitants in Pedro Osório in Rio Grande do Sul (IBGE, 2019). In municipalities that have not adopted the policy, the population average is `r media_pop_geral`, but also with very different values, reaching a maximum of `r max_pop_geral` thousand inhabitants, as is the case of the city of São Paulo. In the chart below, it is possible to compare the municipalities with the Tarifa Zero against each other: 
+In the graph below, we can see the estimated population of 2019 by the IBGE for all cities that adopted the Tarifa Zero, together with the national median (vertical line). The population median of the municipalities with the Zero Tariff is `r media_pop_ffpt` thousand inhabitants, with very different amounts, we have a maximum of `r max_pop_ffpt` as is the case of Caucaia in Ceará, and a minimum of `r min_pop_ffpt` inhabitants in Pedro Osório in Rio Grande do Sul (IBGE, 2019). In municipalities that have not adopted the policy, the population median is `r media_pop_geral`, but also with very different values, reaching a maximum of `r max_pop_geral` thousand inhabitants, as is the case of the city of São Paulo. In the chart below, it is possible to compare the municipalities with the Tarifa Zero against each other: 
    
 
 ```{r, fig.align = 'center', out.width = "80%", dpi=300}
@@ -718,7 +744,7 @@ format_milhar <- function(values, nsmall = 0) {
 
 options(scipen=999)
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(pop_estimada_2019)) %>% 
+  mutate(media_nacional = median(pop_estimada_2019)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
@@ -827,13 +853,13 @@ Caucaia in Ceará, Caeté and Cláudio in Minhas Gerais and Formosa in Goiania.
 
 media_urbanizacao_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(taxa_urbanizacao)) %>% 
+  summarize(median(taxa_urbanizacao)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_urbanizacao_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(taxa_urbanizacao, na.rm = TRUE)) %>% 
+  summarize(median(taxa_urbanizacao, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -852,7 +878,7 @@ In the graph below we can see an urbanization rate of the studied municipalities
 
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(taxa_urbanizacao)) %>% 
+  mutate(media_nacional = median(taxa_urbanizacao)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
@@ -877,11 +903,11 @@ banco_completo_5 %>%
 
 ```
 
-There is a difference between the average urbanization rate of municipalities
-who adopted Tarifa Zero and those who did not. The average rate of the first group is
+There is a difference between the median urbanization rate of municipalities
+who adopted Tarifa Zero and those who did not. The median rate of the first group is
 `r media_urbanizacao_fftp`% while the second is
 `r media_urbanizacao_geral`%. In the first group, two municipalities appear with values that
-approximate the average of the second group, Itatiaiuçu (MG) with 62% of
+approximate the median of the second group, Itatiaiuçu (MG) with 62% of
 urbanization and Pitanga (PR) with 63%. The other municipalities have
 urbanization greater than 70%.
 
@@ -919,7 +945,7 @@ banco_completo_5  %>%
 
 ## 6. Demographic density
 
-The Brazilian demographic density varies a lot, the capitals and large metropolis have a very different demographic density from the small cities in the countryside. The municipalities that adopted the Tarifa Zero policy are generally "small" cities, and therefore with very low population density, in the graph below we can see that only Vargem Grande Paulista in São Paulo reaches 1 inhabitant per km². The national average is 0.5 inhabitant per km², but as we said before, this value can vary a lot and that is why it is very inaccurate. Maybe it's too small because in Brazil the cities are mostly small to medium-sized but nevertheless most of the population is concentrated in capitals and large metropolises.  
+The Brazilian demographic density varies a lot, the capitals and large metropolis have a very different demographic density from the small cities in the countryside. The municipalities that adopted the Tarifa Zero policy are generally "small" cities, and therefore with very low population density, in the graph below we can see that only Vargem Grande Paulista in São Paulo reaches 1 inhabitant per km². The national median is 0.02 inhabitant per km², but as we said before, this value can vary a lot and that is why it is very inaccurate. Maybe it's too small because in Brazil the cities are mostly small to medium-sized but nevertheless most of the population is concentrated in capitals and large metropolises.  
 
 
 ```{r densidade demográfica, fig.align = 'center', out.width = "80%", dpi=300}
@@ -937,7 +963,7 @@ format_densidade_demografica <- function(values, nsmall = 0) {
 # gráfico
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(densidade_demografica)) %>% 
+  mutate(media_nacional = median(densidade_demografica)) %>% 
   mutate(densidade_demografica = round(densidade_demografica, digits = 3))  %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
@@ -976,7 +1002,7 @@ banco_completo_5  %>% filter(densidade_demografica < 0.4) %>%
   scale_x_continuous(labels = format_densidade_demografica) +
   xlab("") +
   ylab("") +
-  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("Yes", "No"))+
+  scale_fill_manual(name = "Tarifa Zero?", values = c("#00688b", "#954182"), labels = c("No", "Yes"))+
   theme(plot.title = element_text(family = "serif", size = 14, face = "bold", hjust = 0.5, colour = "black"),
     text = element_text(family = "serif"),
     axis.text.x=element_text(size = 11),
@@ -1056,25 +1082,42 @@ These are the seven Municipalities with the Tarifa Zero Policy, which have
 urban mobility plan as established by Federal Law number
 12587/2012, according to a survey by the National Secretariat for Mobility and
 Urban Services (SEMOB), which was last updated in February
-2019: 
+2019. We ca see that just one city implemented Tarifa Zero in the same year of the plan's elaboration, Campo Belo in the state of Minas Gerais. 
+furthermore, just Cerqilho and Vargem Grande Paulista adopted this policy after the plan's elaborations, the others cities did it before.  
 
 ```{r Plano de Mobilidade Tabela}
 
 # Tabela plano de mobilidade urbana 2
 
+ano_implem <- tibble(nome_muni=c("Campo Belo","Monte Carmelo", "Volta Redonda","Agudos", "Cerquilho", "Vargem Grande Paulista", "Ivaiporã"),
+        ano_implem =c(2019, 1994, 2018, 2003, 2020, 2019, 2001))
+
 tab_plano_mob <- banco_completo_5  %>% 
   filter(tarifa_zero == "sim") %>%  
   filter(plano_mob == "Sim") %>% 
-  select(UF, nome_muni, classe_pop, ano_elaboracao)
+  select(UF, nome_muni, classe_pop, ano_elaboracao) %>% 
+  mutate_if(is.character, str_to_title) %>% 
+  left_join(ano_implem, by = "nome_muni")
 
 tab_plano_mob %>% 
-  
-  mutate_if(is.character, str_to_title) %>% 
-  mutate(UF = case_when(UF == "Mg" ~ "MG", UF == "Sp" ~"SP", UF == "Pr" ~ "PR", TRUE ~ UF)) %>% 
-  kable(digits=2, col.names=c("Federative Unit", "Municipality", 
-                              "Population Class", 
-                              "Year of elaboration ")) %>%
-  kable_classic_2(full_width = F, html_font = "Cambria")
+  mutate(UF = case_when(UF == "Mg" ~ "MG", UF == "Sp" ~"SP", UF == "Pr" ~ "PR", UF == "Rj" ~ "RJ", TRUE ~ UF)) %>% 
+ reactable(
+      outlined = F, 
+      fullWidth = T,
+      bordered = TRUE,
+      striped = TRUE,
+      defaultColDef = colDef(
+      align = "center"),
+      columns = list(
+      UF = colDef("Federative Unit", minWidth = 130, align = "center"),
+      nome_muni = colDef("Municipality", minWidth = 210, align = "center"), 
+      classe_pop = colDef("Populational Class", minWidth = 240, align = "center"),
+      ano_elaboracao = colDef("Year of Elaboration", minWidth = 220, align = "center"),
+      ano_implem = colDef("Implementation's year of Tarifa Zero", minWidth = 220, align = "center")))
+
+
+
+
 
 
 ```
@@ -1089,13 +1132,13 @@ tab_plano_mob %>%
 
 media_indice_gini_tf <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(indice_gini)) %>% 
+  summarize(median(indice_gini)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_indice_gini_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(indice_gini, na.rm = TRUE)) %>% 
+  summarize(median(indice_gini, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -1103,13 +1146,13 @@ media_indice_gini_geral <- banco_completo_5 %>%
 
 media_indice_theil_tf <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(indice_theil)) %>% 
+  summarize(median(indice_theil)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_indice_theil_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(indice_theil, na.rm = TRUE)) %>% 
+  summarize(median(indice_theil, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -1122,11 +1165,11 @@ Gini and Theil - L are two widely used inequality indices, both measure the
 degree of income concentration in a given group and range from 0 to 1,
 0 being a situation of complete equality, and 1 being a situation of complete
 inequality, in addition both are using data from the 2010 census.
-The general average of the Gini index in the studied cities is
+The general median of the Gini index in the studied cities is
  `r media_indice_gini_tf`, while for municipalities without a Zero Tariff it is
 `r media_indice_gini_geral`. There is only a small difference in the averages. And the same is true for the
-Theil-L index, where the mean in the first group is `r media_indice_theil_tf`, while in the second group it is
-de `r media_indice_theil_geral`, but similarly the municipalities with Tarifa Zero present values that indicate less social inequality.
+Theil-L index, where the median in the first group is `r media_indice_theil_tf`, while in the second group it is
+ `r media_indice_theil_geral`, but similarly the municipalities with Tarifa Zero present values that indicate less social inequality.
 Below we can see the distribution graph of the values of the two indexes for all
 the municipalities with a Tarifa Zero: 
 
@@ -1139,7 +1182,7 @@ banco_completo_5 %>%
   filter(tarifa_zero == "sim") %>% 
   pivot_longer(cols = c("indice_gini", "indice_theil")) %>%
   group_by(name) %>% 
-  mutate(media_nacional = mean(value)) %>% 
+  mutate(media_nacional = median(value)) %>% 
   mutate(name = case_when(
     name == "indice_gini" ~ "Gini",
     name == "indice_theil" ~ "Theil-L")) %>% 
@@ -1170,7 +1213,7 @@ banco_completo_5 %>%
 
 ```
 
-In the density graph below it is possible to see that there is
+In the density graph below it is possible to see that there are
 some differences in the distribution of values but they are very small, the curve referring to
 cities with Tarifa Zero is more to the left while that of the other cities is more to the right. 
 
@@ -1210,36 +1253,37 @@ banco_completo_5 %>%
 
 media_pct_pobres_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(pct_pobres)) %>% 
+  summarize(median(pct_pobres)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_pct_pobres_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(pct_pobres, na.rm = TRUE)) %>% 
+  summarize(median(pct_pobres, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
+diferença <- media_pct_pobres_geral - media_pct_pobres_fftp 
 
 ```
 
 ## 9. Percentage of Poor
 
-The graph below shows the percentage of poor people in each municipality studied and the vertical line represents the national average.
+The graph below shows the percentage of poor people in each municipality studied and the vertical line represents the national median.
 This indicator considers the individual who earns less than R$ 436 
 reais as monthly income, which is the recommended poverty line
 internationally for use in upper-middle income countries with is the case
-from Brazil, and was produced from 2010 census data. There is a considerable difference between the averages found in the
+from Brazil, and was produced from 2010 census data. There is a considerable difference between the medians found in the
 group of cities that have adopted a Tarifa Zero and those that have not. While the
 first group has an average percentage of poor from
 `r media_pct_pobres_fftp`%, the second group has
-`r media_pct_pobres_geral`%, which corresponds to a difference of 14%. 
+`r media_pct_pobres_geral`%, which corresponds to a difference of `r diferença`%. 
 
 
 ```{r Porcentagem de pobres, fig.align = 'center', out.width = "80%", dpi=300}
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(pct_pobres/100)) %>% 
+  mutate(media_nacional = median(pct_pobres/100)) %>% 
   mutate(pct_pobres = pct_pobres/100) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
@@ -1292,17 +1336,18 @@ banco_completo_5 %>%
 
 ```
 
+
 ```{r deslocamento e pobreza médias}
 
 media_deslocamento_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho*100)) %>% 
+  summarize(median(taxa_pop_vulneravel_retorna_diariamente_trabalho*100)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_desloc_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho*100, na.rm = TRUE)) %>% 
+  summarize(median(taxa_pop_vulneravel_retorna_diariamente_trabalho*100, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -1313,6 +1358,7 @@ max_deslocamento_fftp <- banco_completo_5 %>%
 
 ```
 
+
 ## 10. Urban Displacement and Poverty
 
 
@@ -1322,13 +1368,13 @@ max_deslocamento_fftp <- banco_completo_5 %>%
 
 media_desloc_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(ocup_desl)) %>% 
+  summarize(median(ocup_desl)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_desloc_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(ocup_desl, na.rm = TRUE)) %>% 
+  summarize(median(ocup_desl, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -1348,13 +1394,13 @@ max_urbanizacao_geral <- banco_completo_5 %>%
 
 media_desloc2_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho)) %>% 
+  summarize(median(taxa_pop_vulneravel_retorna_diariamente_trabalho)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_desloc2_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(taxa_pop_vulneravel_retorna_diariamente_trabalho, na.rm = TRUE)) %>% 
+  summarize(median(taxa_pop_vulneravel_retorna_diariamente_trabalho, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -1388,7 +1434,7 @@ state of Ceará, while in the other municipalities the maximum of `r max_urbaniz
   mutate(ocup_desl = ocup_desl/100) %>% 
   pivot_longer(cols = c("ocup_desl", "taxa_pop_vulneravel_retorna_diariamente_trabalho")) %>%
   group_by(name) %>% 
-  mutate(media_nacional = mean(value)) %>% 
+  mutate(media_nacional = median(value)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate(name = case_when(
     name == "ocup_desl" ~ "% of vulnerable to poverty who spend more than an hour to work",
@@ -1432,13 +1478,13 @@ state of Ceará, while in the other municipalities the maximum of `r max_urbaniz
 
 media_pib_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(Pib_Municipal_2018)) %>%
+  summarize(median(Pib_Municipal_2018)) %>%
   round(digits = 0) %>% 
   pull()
 
 media_pib_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(Pib_Municipal_2018, na.rm = TRUE)) %>% 
+  summarize(median(Pib_Municipal_2018, na.rm = TRUE)) %>% 
   round(digits = 0) %>% 
   pull()
 
@@ -1457,10 +1503,12 @@ media_pib_2 <- format_real(media_pib_2)
   
 ```
 
-GDP per capita is data produced by IBGE from 2018. The average GDP per capita of the municipalities studied is `r media_pib_1` while the average in Brazilian municipalities that have not adopted the policy is `r media_pib_2`. Looking at this general average, we can say that the GDP per capita of the municipalities that 
-adopted the  Tarifa Zero is almost the double of the Brazilian municipalities that did not adopt it, however, when we observe this value by region and federative unit of the country, we verify that these values can vary widely. Below is a graph with all municipalities that adopted the policy together with the national average: 
+GDP per capita is data produced by IBGE from 2018. The median GDP per capita of the municipalities studied is `r media_pib_1` while the median in Brazilian municipalities that have not adopted the policy is `r media_pib_2`. Looking at this general average, we can say that the GDP per capita of the municipalities that 
+adopted the  Tarifa Zero is almost the double of the Brazilian municipalities that did not adopt it, however, when we observe this value by region and federative unit of the country, we verify that these values can vary widely. Below is a graph with all municipalities that adopted the policy together with the national median: 
 
 ```{r PIB, fig.align = 'center', out.width = "80%", dpi=300}
+
+options(scipen = 999)
 
 # formatação reais 
 
@@ -1475,7 +1523,7 @@ format_real <- function(values, nsmall = 0) {
 # mapa
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(Pib_Municipal_2018)) %>% 
+  mutate(media_nacional = median(Pib_Municipal_2018)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
@@ -1537,7 +1585,7 @@ banco_completo_5 %>%
 
 ```
 
-In the table below we have the average per capita GDP by region in the two groups of municipalities. In it we can observe that the northeast and southeast regions, in fact, the average GDP per capita, in comparison, is much higher, however the cities in the center west and south have lower averages. 
+In the table below we have the median per capita GDP by region in the two groups of municipalities. In it we can observe that the northeast and southeast regions, in fact, the median GDP per capita, in comparison, is much higher, however the cities in the center west and south have lower averages. 
 
 
 ```{r PIB por região}
@@ -1547,12 +1595,12 @@ In the table below we have the average per capita GDP by region in the two group
 pib_regiao_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   group_by(REGIAO) %>% 
-  summarize(media_pib_fftp = mean(Pib_Municipal_2018))
+  summarize(media_pib_fftp = median(Pib_Municipal_2018))
 
 pib_regiao_2 <- banco_completo_5 %>% 
   group_by(REGIAO) %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(media_pib_geral = mean(Pib_Municipal_2018, na.rm = TRUE)) %>% 
+  summarize(media_pib_geral = median(Pib_Municipal_2018, na.rm = TRUE)) %>% 
   filter(REGIAO != " Norte") 
 
 # Formatação para reais: 
@@ -1579,7 +1627,7 @@ pib_regiao_2$media_pib_geral <- format_real(pib_regiao_2$media_pib_geral)
 
 ```
 
-Here we can see the same data for the states with municipalities that adopted Tarifa Zero. Between the two group we have four states where the GPD is higher in the municipalities with Tarifa Zero: Ceará, Minas Gerais, Rio de Janeiro and São Paulo. The other two, Goiás and Rio Grande do Sul, are the states with lower values, which follows the data by region of the country. 
+Here we can see the same data for the states with municipalities that adopted Tarifa Zero. Between the two group we have four states where the GPD is higher in the municipalities with Tarifa Zero: Ceará, Minas Gerais, Rio de Janeiro, São Paulo e Goiás. The other two, Paraná and Rio Grande do Sul, are the states with lower values, which follows the data by region of the country in regard to the South. 
 
 ```{r PIB por Estado}
 
@@ -1588,13 +1636,13 @@ Here we can see the same data for the states with municipalities that adopted Ta
 pib_uf_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
   group_by(UF) %>% 
-  summarize(media_1 = mean(Pib_Municipal_2018))
+  summarize(media_1 = median(Pib_Municipal_2018))
 
 pib_uf_2 <- banco_completo_5 %>% 
   filter(UF == "CE" | UF == "GO" | UF == "MG" | UF == "PR" | UF == "RJ" | UF == "RS" | UF == "SP") %>% 
   group_by(UF) %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(media_2 = mean(Pib_Municipal_2018))
+  summarize(media_2 = median(Pib_Municipal_2018))
 
 # formatando para reais
 
@@ -1633,13 +1681,13 @@ taxa_ocupação_geral <- banco_completo_5 %>%
 ```
 
 
-The activity rate corresponds to the percentage of the adult population (18 years old or more) who are economically active, that is, who are occupied or who sought work in the month prior to the survey, in this case, the 2010 IBGE survey. average occupancy rate in municipalities with Tarifa Zero is `r taxa_ocupação_ffpt`% while in municipalities without the policy is `r taxa_ocupação_geral`%, therefore slightly higher, but very little difference. The chart below shows the percentage for each municipality, we can see that in general it is above 60% with only the exception of Pedro Osório in Rio Grande do Sul. 
+The activity rate corresponds to the percentage of the adult population (18 years old or more) who are economically active, that is, who are occupied or who sought work in the month prior to the survey, in this case, the 2010 IBGE survey. The median occupancy rate in municipalities with Tarifa Zero is `r taxa_ocupação_ffpt`% while in municipalities without the policy is `r taxa_ocupação_geral`%, therefore slightly higher, but very little difference. The chart below shows the percentage for each municipality, we can see that in general it is above 60% with only the exception of Pedro Osório in Rio Grande do Sul. 
 
 
 ```{r Taxa de Atividade 18 anos ou mais, fig.align = 'center', out.width = "80%", dpi=300}
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(taxa_atividade_18_anos_ou_mais/100)) %>% 
+  mutate(media_nacional = median(taxa_atividade_18_anos_ou_mais/100)) %>% 
   mutate(taxa_atividade_18_anos_ou_mais = taxa_atividade_18_anos_ou_mais/100) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
@@ -1713,14 +1761,14 @@ format_real <- function(values, nsmall = 0) {
 
   renda_per_capta_fftp <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(media_1 = mean(renda_percapta_media)) %>% 
+  summarize(media_1 = median(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
   format_real()
  
 
   renda_per_capta_geral <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(media_1 = mean(renda_percapta_media)) %>% 
+  summarize(media_1 = median(renda_percapta_media)) %>% 
   round(digits = 2) %>% 
   format_real()
 
@@ -1741,15 +1789,15 @@ format_real <- function(values, nsmall = 0) {
 ```
 
 
-The average per capita income is the average individual income of all residents of a given municipality. This data is from IBGE and refers to 2010 census.
-The average income of the municipalities that adopted Tarifa Zero is `r renda_per_capta_fftp` reais, while for the municipalities that did not adopt the policy  is  
+The  average per capita income is the average individual income of all residents of a given municipality. This data is from IBGE and refers to 2010 census.
+The median income of the municipalities that adopted Tarifa Zero is `r renda_per_capta_fftp` reais, while for the municipalities that did not adopt the policy  is  
 `r renda_per_capta_geral` reais, that is, there is a difference of just over 180 reais. The curve corresponding to municipalities with Tarifa Zero is more to the left in the graph, despite the large variation between these municipalities. The minimum average per capita income is  `r renda_per_capta_min`, in the municipality of Aquirraz in Ceará, while the maximum average per capita income is  `r renda_per_capta_max`, in the municipality of Holambra in São Paulo. 
 
 
 ```{r Renda per capta, fig.align = 'center', out.width = "75%", dpi=300}
 
 banco_completo_5 %>% 
-  mutate(media_nacional = mean(renda_percapta_media)) %>% 
+  mutate(media_nacional = median(renda_percapta_media)) %>% 
   filter(tarifa_zero == "sim") %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
@@ -1811,40 +1859,46 @@ banco_completo_5 %>%
 
 ```{r IVS média geral}
 
-# média 
+# mediana 
 
 media_ivs_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(indice_ivs, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(median(indice_ivs, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 media_ivs_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(indice_ivs, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(median(indice_ivs, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 # máximo e mínimo
 
 max_ivs_2 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(max(indice_ivs, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(max(indice_ivs, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 min_ivs_urbano_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(min(indice_ivs, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(min(indice_ivs, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 # infraestrutura urbana
 
 media_ivs_urbano_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(ivs_infra_urbana, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(median(ivs_infra_urbana, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 media_ivs_urbano_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(ivs_infra_urbana, na.rm = TRUE)) %>% round(digits = 3) %>% 
+  summarize(median(ivs_infra_urbana, na.rm = TRUE)) %>% 
+  round(digits = 3) %>% 
   pull()
 
 
@@ -1956,9 +2010,9 @@ classification of the values attributed by the index to each municipality:
 
 ```
 
-Taking the IVS classification into account, the average of municipalities that adopted the Tarifa Zero was `r media_ivs_1`, 
-which indicates low social vulnerability, and the average in municipalities that did not adopt the policy was
-`r media_ivs_2`, which indicates a medium vulnerability situation. The first group also has a maximum value of
+Taking the IVS classification into account, the median of municipalities that adopted the Tarifa Zero was `r media_ivs_1`, 
+which indicates very low social vulnerability, and the median in municipalities that did not adopt the policy was
+`r media_ivs_2`, which also indicates a very low social vulnerability situation. The first group also has a maximum value of
 `r max_ivs_2` referring to the city of Caucaia in Ceará, representing high social vulnerability, and at the other extreme the value
 of `r min_ivs_urbano_1` in the city of Holambra in São Paulo, corresponding to very low social vulnerability. 
 
@@ -1977,7 +2031,7 @@ banco_completo_5 %>%
   mutate(name = factor(name, levels = c("General", "Urban Infrastructure", "Human Capital", 
         "Income and Work", ordered = T))) %>% 
   group_by(name) %>% 
-  mutate(media_nacional = mean(value)) %>% 
+  mutate(media_nacional = median(value)) %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
@@ -2053,25 +2107,25 @@ banco_completo_5 %>%
 
 media_idh_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm)) %>% round(digits = 2) %>% 
+  summarize(median(idhm)) %>% round(digits = 2) %>% 
   pull()
 
 media_idh_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm, na.rm = TRUE)) %>% round(digits = 2) %>% 
+  summarize(median(idhm, na.rm = TRUE)) %>% round(digits = 2) %>% 
   pull()
 
 # idhm renda
 
 media_idh_renda_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_r)) %>% 
+  summarize(median(idhm_r)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_idh_renda_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_r, na.rm = TRUE)) %>% 
+  summarize(median(idhm_r, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -2079,13 +2133,13 @@ media_idh_renda_2 <- banco_completo_5 %>%
 
 media_idh_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_e)) %>% 
+  summarize(median(idhm_e)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_idh_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_e, na.rm = TRUE)) %>% 
+  summarize(median(idhm_e, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -2093,13 +2147,13 @@ media_idh_2 <- banco_completo_5 %>%
 
 media_idh_longevidade_1 <- banco_completo_5 %>% 
   filter(tarifa_zero == "sim") %>% 
-  summarize(mean(idhm_l)) %>% 
+  summarize(median(idhm_l)) %>% 
   round(digits = 2) %>% 
   pull()
 
 media_idh_logenvidade_2 <- banco_completo_5 %>% 
   filter(tarifa_zero != "sim") %>% 
-  summarize(mean(idhm_l, na.rm = TRUE)) %>% 
+  summarize(median(idhm_l, na.rm = TRUE)) %>% 
   round(digits = 2) %>% 
   pull()
 
@@ -2134,19 +2188,19 @@ Below is the classification:
 -   Between 0.800 and 1 - very high 
 
 
-The average MHDI of the studied municipalities is `r media_idh_1`, which indicates "high" MHDI, while the
-average in Brazilian municipalities that have not adopted the policy is
-`r media_idh_2`, which indicates MHDI "medium". The average of the MHDI Income 
+The median MHDI of the studied municipalities is `r media_idh_1`, which indicates "medium" MHDI, while the
+median in Brazilian municipalities that have not adopted the policy is
+`r media_idh_2`, which indicates MHDI "low". The median of the MHDI Income 
 of the studied municipalities is of `r media_idh_renda_1`, that is, "high", while 
-the average in Brazilian municipalities that have not adopted the policy is `r media_idh_renda_2`, the medium.
+the average in Brazilian municipalities that have not adopted the policy is `r media_idh_renda_2`, medium.
 In fact, when we look at the distribution of values in the graph of
 density, we noticed that the municipalities that adopted Tarifa Zero present
-values closer to 1, being  more to the left of the graphic. The average of the MHDI Education of municipalities with Tarifa Zero is `r media_idh_1`
-while the average in Brazilian municipalities that have not adopted the policy
+values closer to 1, being  more to the left of the graphic. The median of the MHDI Education of municipalities with Tarifa Zero is `r media_idh_1`
+while the median in Brazilian municipalities that have not adopted the policy
 is `r media_idh_2`. So, as in the density graph of the general MHDI and MHDI income, the
 municipalities with Tarifa Zero have values closer to 1 and more to the left of the
-density graph. Finally, the average of the MHDI longevity of the studied municipalities is of
-`r media_idh_longevidade_1` while the average in Brazilian municipalities
+density graph. Finally, the median of the MHDI longevity of the studied municipalities is of
+`r media_idh_longevidade_1` while the median in Brazilian municipalities
 that have not adopted the policy is `r media_idh_logenvidade_2`. There is just a small
 difference between the two groups, which are in the same "very high" MHDI group. 
 
@@ -2231,7 +2285,7 @@ banco_completo_5 %>%
   mutate(name = factor(name, levels = c("Gerneral", "Education", "Income", 
         "Longevity", ordered = T))) %>% 
   group_by(name) %>% 
-  mutate(media_nacional = mean(value)) %>% 
+  mutate(media_nacional = median(value)) %>% 
   mutate_if(is.character, str_to_title) %>%
   mutate(UF = case_when(UF == "Ce" ~ "CE", UF == "Mg" ~ "MG", UF == "Sp" ~"SP", 
                         UF == "Pr" ~ "PR", UF == "Rs" ~"RS", UF == "Go" ~"GO", 
@@ -2320,7 +2374,7 @@ The graph below compares social prosperity in two groups, again the municipaliti
   ylab("") +
   ggtitle("") +
   scale_y_continuous(labels = scales::percent) + 
-  scale_fill_manual(name = "", values = c("#00688b", "#954182"), labels = c("Municipalities with Tarifa Zero", "Municipalities without Tarifa Zero")) + 
+  scale_fill_manual(name = "", values = c("#954182", "#00688b"), labels = c("Municipalities with Tarifa Zero", "Municipalities without Tarifa Zero")) + 
   geom_label(aes(x = prosperidade_social, y = pct_prosperidade, group = tarifa_zero, label = scales::percent(pct_prosperidade, accuracy = 1)), 
              position = position_fill(vjust = 0.5),family = "serif", fill = "beige", color = "gray22") +
   theme_minimal() + 
